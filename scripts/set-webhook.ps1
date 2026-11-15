@@ -1,11 +1,11 @@
-﻿# ==============================================================================
-# നേരംപോക്ക് (NERAMPOKKU) — TELEGRAM WEBHOOK SETUP SCRIPT
+# ==============================================================================
+# NERAMPOKKU - TELEGRAM WEBHOOK SETUP SCRIPT
 # ==============================================================================
 
-Write-Host "🎮 നേരംപോക്ക്: Reading configuration from .env..." -ForegroundColor Cyan
+Write-Host "NERAMPOKKU: Reading configuration from .env..." -ForegroundColor Cyan
 
 if (-not (Test-Path ".env")) {
-    Write-Host "❌ Error: .env file not found in current directory!" -ForegroundColor Red
+    Write-Host "Error: .env file not found in current directory!" -ForegroundColor Red
     exit 1
 }
 
@@ -23,14 +23,14 @@ $secret = $envVars["TELEGRAM_WEBHOOK_SECRET"]
 $supabase = $envVars["VITE_SUPABASE_URL"]
 
 if (-not $token -or $token -eq "your-telegram-bot-token") {
-    Write-Host "❌ Error: TELEGRAM_BOT_TOKEN is missing or is placeholder in .env!" -ForegroundColor Red
+    Write-Host "Error: TELEGRAM_BOT_TOKEN is missing or is placeholder in .env!" -ForegroundColor Red
     exit 1
 }
 
 # Auto-clean token: if user included "bot" prefix, remove it because URL adds "bot"
 if ($token.StartsWith("bot")) {
     $token = $token.Substring(3)
-    Write-Host "ℹ️ Cleaned token: stripped leading 'bot' prefix." -ForegroundColor Yellow
+    Write-Host "Cleaned token: stripped leading 'bot' prefix." -ForegroundColor Yellow
 }
 
 # Remove any angle brackets if accidentally pasted with <...>
@@ -39,16 +39,16 @@ $token = $token.Trim("<", ">", " ")
 $cleanUrl = $supabase.TrimEnd('/')
 $webhookUrl = "$cleanUrl/functions/v1/telegram-bot"
 
-Write-Host "🔍 Testing token with Telegram getMe..." -ForegroundColor Cyan
+Write-Host "Testing token with Telegram getMe..." -ForegroundColor Cyan
 $testUrl = "https://api.telegram.org/bot$token/getMe"
 
 try {
     $botInfo = Invoke-RestMethod -Uri $testUrl -Method Get -TimeoutSec 10
     if ($botInfo.ok) {
-        Write-Host "✅ Bot Verified: @$($botInfo.result.username) ($($botInfo.result.first_name))" -ForegroundColor Green
+        Write-Host "Bot Verified: @$($botInfo.result.username) ($($botInfo.result.first_name))" -ForegroundColor Green
     }
 } catch {
-    Write-Host "❌ Telegram rejected token:" -ForegroundColor Red
+    Write-Host "Telegram rejected token:" -ForegroundColor Red
     if ($_.ErrorDetails) {
         Write-Host $_.ErrorDetails.Message -ForegroundColor Red
     } else {
@@ -61,7 +61,7 @@ try {
     exit 1
 }
 
-Write-Host "`n🚀 Registering Webhook to: $webhookUrl" -ForegroundColor Cyan
+Write-Host "`nRegistering Webhook to: $webhookUrl" -ForegroundColor Cyan
 $setWebhookUrl = "https://api.telegram.org/bot$token/setWebhook"
 
 $body = @{
@@ -79,14 +79,14 @@ try {
         -TimeoutSec 10
 
     if ($result.ok) {
-        Write-Host "`n🎉 SUCCESS! Telegram Webhook is active!" -ForegroundColor Green
+        Write-Host "`nSUCCESS! Telegram Webhook is active!" -ForegroundColor Green
         Write-Host "Description: $($result.description)" -ForegroundColor Green
         Write-Host "`nYou can now go to your Telegram bot or group and test /start and /games!" -ForegroundColor Green
     } else {
-        Write-Host "❌ Telegram returned: $($result.description)" -ForegroundColor Red
+        Write-Host "Telegram returned: $($result.description)" -ForegroundColor Red
     }
 } catch {
-    Write-Host "❌ Failed to set webhook:" -ForegroundColor Red
+    Write-Host "Failed to set webhook:" -ForegroundColor Red
     if ($_.ErrorDetails) {
         Write-Host $_.ErrorDetails.Message -ForegroundColor Red
     } else {
