@@ -12,7 +12,7 @@ serve(async (req) => {
   const webhookSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SERVICE_ROLE_KEY");
-  const botUsername = Deno.env.get("VITE_TELEGRAM_BOT_USERNAME") || "NeramPokkuBot";
+  const botUsername = Deno.env.get("VITE_TELEGRAM_BOT_USERNAME") || "nerampokk_gamebot";
 
   if (!botToken || !supabaseUrl || !supabaseServiceKey) {
     return new Response("Configuration missing", { status: 500 });

@@ -106,9 +106,8 @@ export const Logo: React.FC<LogoProps> = ({
         {showTagline && (
           <p
             className={`text-slate-400 font-bold ${descSizes} mt-0.5 tracking-normal`}
-            style={{ fontFamily: "'Noto Sans Malayalam', sans-serif" }}
           >
-            കളിക്കാം... സമയം പോക്കാം!
+            Play UNO & LUDO together!
           </p>
         )}
       </div>

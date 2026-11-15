@@ -16,7 +16,7 @@ dotenv.config();
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const botUsername = process.env.VITE_TELEGRAM_BOT_USERNAME || "NeramPokkuBot";
+const botUsername = process.env.VITE_TELEGRAM_BOT_USERNAME || "nerampokk_gamebot";
 const appUrl = process.env.VITE_APP_URL || "https://nerampokku.pages.dev";
 
 if (!token) {
