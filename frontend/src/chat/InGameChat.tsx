@@ -8,6 +8,7 @@ import { ChatMessage, QuickReactionEvent } from "./types";
 import { MessageSquare, Send, X, Volume2, VolumeX, Smile } from "lucide-react";
 import { sounds } from "../telegram/audio";
 import { haptics } from "../telegram/haptics";
+import { getPlayerAvatar } from "../utils/avatar";
 
 interface InGameChatProps {
   sessionId: string;
@@ -173,12 +174,9 @@ export const InGameChat: React.FC<InGameChatProps> = ({
                     <div className="flex items-center space-x-1.5 mb-0.5">
                       {!isMe && (
                         <img
-                          src={
-                            msg.senderAvatar ||
-                            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40"
-                          }
+                          src={getPlayerAvatar(msg.senderAvatar, msg.senderName, msg.senderId)}
                           alt={msg.senderName}
-                          className="w-4 h-4 rounded-full object-cover"
+                          className="w-4 h-4 rounded-full object-cover bg-slate-800"
                         />
                       )}
                       <span className="text-[10px] font-bold text-slate-400">

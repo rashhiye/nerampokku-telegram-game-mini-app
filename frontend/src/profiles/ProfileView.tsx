@@ -5,6 +5,7 @@
 
 import React from "react";
 import { Trophy, Flame, Target, Award, ArrowLeft } from "lucide-react";
+import { getPlayerAvatar } from "../utils/avatar";
 
 interface ProfileStats {
   uno: { played: number; wins: number; losses: number; winRate: number };
@@ -40,12 +41,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ user, stats, onBack })
       {/* User Header Card */}
       <div className="p-5 rounded-3xl bg-[#161B26] border border-slate-800 shadow-xl flex items-center space-x-4">
         <img
-          src={
-            user.photo_url ||
-            "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&h=120"
-          }
+          src={getPlayerAvatar(user.photo_url, user.first_name, user.id.toString())}
           alt={user.first_name}
-          className="w-16 h-16 rounded-3xl object-cover border-2 border-indigo-500 shadow-md"
+          className="w-16 h-16 rounded-3xl object-cover border-2 border-indigo-500 shadow-md bg-slate-800"
         />
         <div>
           <h3 className="text-lg font-black text-white">

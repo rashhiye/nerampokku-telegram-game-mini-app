@@ -5,6 +5,7 @@
 
 import React, { useState } from "react";
 import { Trophy, ArrowLeft, Medal } from "lucide-react";
+import { getPlayerAvatar } from "../utils/avatar";
 
 export interface LeaderboardEntry {
   rank: number;
@@ -103,12 +104,9 @@ export const LeaderboardView: React.FC<LeaderboardViewProps> = ({
                 </span>
 
                 <img
-                  src={
-                    player.avatar ||
-                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60"
-                  }
+                  src={getPlayerAvatar(player.avatar, player.name, player.profileId)}
                   alt={player.name}
-                  className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow"
+                  className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow bg-slate-800"
                 />
 
                 <div>

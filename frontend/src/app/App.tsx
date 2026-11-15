@@ -21,6 +21,7 @@ import { createLudoGame, applyLudoAction } from "../games/ludo/engine/ludoEngine
 import { supabase } from "../services/supabase";
 import { Home, Trophy, User, HelpCircle } from "lucide-react";
 import { haptics } from "../telegram/haptics";
+import { getPlayerAvatar } from "../utils/avatar";
 
 type AppScreen = "lobby" | "waiting" | "game_uno" | "game_ludo" | "profile" | "leaderboard" | "help";
 
@@ -77,6 +78,20 @@ export const App: React.FC = () => {
         if (existingProf) {
           resolvedProfileId = existingProf.id;
           setProfileId(existingProf.id);
+
+          // Update user photo and details in Supabase
+          if (context.user.photo_url || context.user.first_name) {
+            await supabase
+              .from("profiles")
+              .update({
+                first_name: context.user.first_name,
+                last_name: context.user.last_name || null,
+                username: context.user.username || null,
+                photo_url: context.user.photo_url || null,
+                last_seen_at: new Date().toISOString(),
+              })
+              .eq("id", existingProf.id);
+          }
         } else {
           const { data: newProf, error: insErr } = await supabase
             .from("profiles")
@@ -251,21 +266,29 @@ export const App: React.FC = () => {
         .order("seat_index", { ascending: true });
 
       if (data && !error) {
-        const mapped: SessionPlayerInfo[] = data.map((p: any) => ({
-          id: p.id,
-          profileId: p.profile_id,
-          name: p.profiles?.first_name || "Player",
-          username: p.profiles?.username || undefined,
-          avatar: p.profiles?.photo_url || undefined,
-          seatIndex: p.seat_index,
-          isHost: p.seat_index === 0,
-          status: p.status,
-        }));
+        const activeProf = profileId || context.user.id.toString();
+        const mapped: SessionPlayerInfo[] = data.map((p: any) => {
+          const isCurrentUser = p.profile_id === activeProf;
+          const rawPhoto = (isCurrentUser && context.user.photo_url)
+            ? context.user.photo_url
+            : p.profiles?.photo_url;
+          const playerName = p.profiles?.first_name || (isCurrentUser ? context.user.first_name : "Player");
+
+          return {
+            id: p.id,
+            profileId: p.profile_id,
+            name: playerName,
+            username: p.profiles?.username || undefined,
+            avatar: getPlayerAvatar(rawPhoto, playerName, p.profile_id),
+            seatIndex: p.seat_index,
+            isHost: p.seat_index === 0,
+            status: p.status,
+          };
+        });
 
         setRoomPlayers(mapped);
 
         // Update my seat
-        const activeProf = profileId || context.user.id.toString();
         const me = mapped.find((p) => p.profileId === activeProf);
         if (me) {
           setMySeatIndex(me.seatIndex);
@@ -297,6 +320,41 @@ export const App: React.FC = () => {
       console.warn("fetchGameState error:", e);
     }
   };
+
+  // Broadcast helper to notify room participants instantly
+  const broadcastRoomUpdate = () => {
+    if (roomChannelRef.current) {
+      try {
+        roomChannelRef.current.send({
+          type: "broadcast",
+          event: "room_update",
+          payload: { timestamp: Date.now() },
+        });
+      } catch (err) {
+        // Safe ignore
+      }
+    }
+  };
+
+  // Active room player poller while in waiting room (guarantees host & guests stay in sync)
+  useEffect(() => {
+    if (screen === "waiting" && currentSession) {
+      const pollTimer = setInterval(() => {
+        fetchRoomPlayers(currentSession.id);
+      }, 1500);
+      return () => clearInterval(pollTimer);
+    }
+  }, [screen, currentSession?.id]);
+
+  // Lobby sessions poller
+  useEffect(() => {
+    if (screen === "lobby") {
+      const pollTimer = setInterval(() => {
+        fetchSessions();
+      }, 3000);
+      return () => clearInterval(pollTimer);
+    }
+  }, [screen, groupId]);
 
   useEffect(() => {
     if (!currentSession) return;
@@ -354,6 +412,9 @@ export const App: React.FC = () => {
           }
         }
       )
+      .on("broadcast", { event: "room_update" }, () => {
+        fetchRoomPlayers(currentSession.id);
+      })
       .on(
         "postgres_changes",
         {
@@ -478,7 +539,7 @@ export const App: React.FC = () => {
           profileId: activeProf,
           name: context.user.first_name,
           username: context.user.username,
-          avatar: context.user.photo_url,
+          avatar: getPlayerAvatar(context.user.photo_url, context.user.first_name, activeProf),
           seatIndex: 0,
           isHost: true,
           status: "waiting",
@@ -564,6 +625,7 @@ export const App: React.FC = () => {
       }
 
       await fetchRoomPlayers(sessionId);
+      broadcastRoomUpdate();
       setScreen("waiting");
     } catch (err: any) {
       console.error("Join session error:", err.message);
@@ -579,6 +641,7 @@ export const App: React.FC = () => {
           .delete()
           .eq("session_id", currentSession.id)
           .eq("profile_id", profileId);
+        broadcastRoomUpdate();
       } catch (e) {
         console.warn("Leave room error:", e);
       }
@@ -618,6 +681,7 @@ export const App: React.FC = () => {
           seat_index: botIdx,
           status: "waiting",
         });
+        broadcastRoomUpdate();
       }
     } catch (e) {
       // Fallback local

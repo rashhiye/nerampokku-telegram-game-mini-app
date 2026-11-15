@@ -65,7 +65,24 @@ export const MOCK_TELEGRAM_USERS = [
 export function getTelegramLaunchContext(): TelegramLaunchContext {
   const tg = (typeof window !== "undefined" ? (window as any).Telegram?.WebApp : null);
 
-  if (tg && tg.initData && tg.initDataUnsafe?.user) {
+  // Extract startParam from all possible sources (Telegram WebApp API, URL query, URL hash)
+  let detectedStartParam: string | undefined = undefined;
+
+  if (typeof window !== "undefined") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashClean = window.location.hash.replace(/^#/, "");
+    const hashParams = new URLSearchParams(hashClean);
+
+    detectedStartParam =
+      tg?.initDataUnsafe?.start_param ||
+      urlParams.get("tgWebAppStartParam") ||
+      urlParams.get("startapp") ||
+      hashParams.get("tgWebAppStartParam") ||
+      hashParams.get("startapp") ||
+      undefined;
+  }
+
+  if (tg && (tg.initData || tg.initDataUnsafe?.user)) {
     // Running inside official Telegram client
     try {
       tg.ready();
@@ -75,27 +92,27 @@ export function getTelegramLaunchContext(): TelegramLaunchContext {
       console.warn("Telegram WebApp API initialization notice:", e);
     }
 
-    return {
-      isTelegram: true,
-      initDataRaw: tg.initData,
-      user: {
-        id: tg.initDataUnsafe.user.id,
-        first_name: tg.initDataUnsafe.user.first_name,
-        last_name: tg.initDataUnsafe.user.last_name,
-        username: tg.initDataUnsafe.user.username,
-        photo_url: tg.initDataUnsafe.user.photo_url,
-      },
-      chatType: tg.initDataUnsafe.chat_type,
-      chatInstance: tg.initDataUnsafe.chat_instance,
-      startParam: tg.initDataUnsafe.start_param,
-    };
+    const u = tg.initDataUnsafe?.user;
+    if (u) {
+      return {
+        isTelegram: true,
+        initDataRaw: tg.initData || "",
+        user: {
+          id: u.id,
+          first_name: u.first_name || "Player",
+          last_name: u.last_name,
+          username: u.username,
+          photo_url: u.photo_url,
+        },
+        chatType: tg.initDataUnsafe?.chat_type,
+        chatInstance: tg.initDataUnsafe?.chat_instance,
+        startParam: detectedStartParam,
+      };
+    }
   }
 
-  // Running in local browser -> read URL parameters or use stored mock
-  const urlParams = new URLSearchParams(window.location.search);
-  const startParam = urlParams.get("tgWebAppStartParam") || urlParams.get("startapp") || undefined;
-  
-  // Allow user to switch mock user via ?user=0,1,2,3 for local multi-window testing!
+  // Running in external browser or dev testing
+  const urlParams = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
   const mockUserIndex = parseInt(urlParams.get("user") || "0", 10) % MOCK_TELEGRAM_USERS.length;
   const mockUser = MOCK_TELEGRAM_USERS[mockUserIndex] || MOCK_TELEGRAM_USERS[0];
 
@@ -105,6 +122,6 @@ export function getTelegramLaunchContext(): TelegramLaunchContext {
     user: mockUser,
     chatType: "supergroup",
     chatInstance: "mock_chat_instance_123",
-    startParam: startParam || "g_-1001234567890",
+    startParam: detectedStartParam,
   };
 }

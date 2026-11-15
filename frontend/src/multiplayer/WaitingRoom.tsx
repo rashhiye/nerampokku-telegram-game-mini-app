@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import { GameSessionInfo, SessionPlayerInfo } from "./types";
 import { Crown, User, Share2, LogOut, Play, Copy, Check, UserPlus } from "lucide-react";
 import { haptics } from "../telegram/haptics";
+import { getPlayerAvatar } from "../utils/avatar";
 
 interface WaitingRoomProps {
   session: GameSessionInfo;
@@ -82,12 +83,9 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
               >
                 <div className="relative">
                   <img
-                    src={
-                      seatedPlayer.avatar ||
-                      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=60&h=60"
-                    }
+                    src={getPlayerAvatar(seatedPlayer.avatar, seatedPlayer.name, seatedPlayer.profileId)}
                     alt={seatedPlayer.name}
-                    className="w-11 h-11 rounded-2xl object-cover border border-slate-700 shadow"
+                    className="w-11 h-11 rounded-2xl object-cover border border-slate-700 shadow bg-slate-800"
                   />
                   {seatedPlayer.isHost && (
                     <span className="absolute -top-1.5 -right-1.5 bg-amber-500 text-slate-950 p-1 rounded-full shadow">
