@@ -190,11 +190,19 @@ export const LudoTable: React.FC<LudoTableProps> = ({
 
         {/* 3D Dice Component */}
         <div className="flex items-center space-x-2">
-          {canRoll && (
-            <span className="text-[10px] font-black text-amber-300 uppercase animate-bounce mr-1 hidden sm:inline">
+          {canRoll ? (
+            <span className="text-[10px] font-black text-emerald-400 uppercase animate-bounce mr-1">
               Tap Dice!
             </span>
-          )}
+          ) : !isMyTurn && gameState.turnPhase === "ROLL" ? (
+            <span className="text-[10px] font-bold text-amber-300 mr-1 animate-pulse">
+              {activePlayerName} rolling...
+            </span>
+          ) : canMove ? (
+            <span className="text-[10px] font-black text-amber-400 uppercase animate-bounce mr-1">
+              Select Token!
+            </span>
+          ) : null}
           <LudoDice
             value={gameState.currentDiceValue}
             canRoll={canRoll}

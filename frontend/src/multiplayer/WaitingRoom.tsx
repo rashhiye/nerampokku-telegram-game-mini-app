@@ -18,6 +18,7 @@ interface WaitingRoomProps {
   onLeaveRoom: () => void;
   onCloseRoom?: () => void;
   onAddBot?: () => void;
+  onFillBots?: () => void;
 }
 
 export const WaitingRoom: React.FC<WaitingRoomProps> = ({
@@ -29,6 +30,7 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
   onLeaveRoom,
   onCloseRoom,
   onAddBot,
+  onFillBots,
 }) => {
   const [copied, setCopied] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
@@ -97,9 +99,14 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
                   )}
                 </div>
 
-                <div className="overflow-hidden">
-                  <div className="font-extrabold text-xs text-white truncate">
-                    {seatedPlayer.name} {isMe && "(You)"}
+                <div className="overflow-hidden flex-1">
+                  <div className="font-extrabold text-xs text-white truncate flex items-center space-x-1.5">
+                    <span>{seatedPlayer.name} {isMe && "(You)"}</span>
+                    {(seatedPlayer.name.startsWith("Bot ") || seatedPlayer.profileId.startsWith("bot_")) && (
+                      <span className="bg-purple-900/90 text-purple-200 text-[9px] font-black px-1.5 py-0.5 rounded-md border border-purple-500/60 shadow">
+                        🤖 AI
+                      </span>
+                    )}
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
                     Seat #{seatIdx + 1}
@@ -150,16 +157,30 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
         </div>
       </div>
 
-      {/* Optional: Host can add a bot player for testing */}
-      {isHost && players.length < session.maxPlayers && onAddBot && (
-        <button
-          type="button"
-          onClick={onAddBot}
-          className="w-full py-2.5 rounded-2xl bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-700/40 text-indigo-300 font-bold text-xs flex items-center justify-center space-x-1.5 active:scale-95 transition-all"
-        >
-          <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
-          <span>+ Add Bot Player (Optional Solo Test)</span>
-        </button>
+      {/* AI Bot Management for Host (Play Solo or Fill Empty Seats) */}
+      {isHost && players.length < session.maxPlayers && (
+        <div className="flex space-x-2">
+          {onAddBot && (
+            <button
+              type="button"
+              onClick={onAddBot}
+              className="flex-1 py-2.5 rounded-2xl bg-indigo-950/70 hover:bg-indigo-900/80 border border-indigo-600/60 text-indigo-200 font-extrabold text-xs flex items-center justify-center space-x-1.5 active:scale-95 transition-all shadow"
+            >
+              <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
+              <span>+ Add AI Bot (+1)</span>
+            </button>
+          )}
+
+          {onFillBots && (
+            <button
+              type="button"
+              onClick={onFillBots}
+              className="flex-1 py-2.5 rounded-2xl bg-amber-950/70 hover:bg-amber-900/80 border border-amber-600/60 text-amber-200 font-extrabold text-xs flex items-center justify-center space-x-1.5 active:scale-95 transition-all shadow"
+            >
+              <span>⚡ Fill with AI</span>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Start / Leave Action Buttons */}

@@ -16,7 +16,7 @@ import { GameSessionInfo, SessionPlayerInfo, GameType } from "../multiplayer/typ
 import { ChatMessage, QuickReactionEvent } from "../chat/types";
 import { UnoGameState, CardColor } from "../games/uno/engine/types";
 import { LudoGameState } from "../games/ludo/engine/types";
-import { createUnoGame, applyUnoAction } from "../games/uno/engine/unoEngine";
+import { createUnoGame, applyUnoAction, canPlayCard } from "../games/uno/engine/unoEngine";
 import { createLudoGame, applyLudoAction } from "../games/ludo/engine/ludoEngine";
 import { supabase } from "../services/supabase";
 import { Home, Trophy, User, HelpCircle } from "lucide-react";
@@ -848,6 +848,7 @@ export const App: React.FC = () => {
           seat_index: botIdx,
           status: "waiting",
         });
+        await fetchRoomPlayers(currentSession.id);
         broadcastRoomUpdate();
       }
     } catch (e) {
@@ -863,8 +864,18 @@ export const App: React.FC = () => {
         status: "waiting",
       };
       setRoomPlayers((prev) => [...prev, newBot]);
+      broadcastRoomUpdate();
     }
     haptics.impact("light");
+  };
+
+  // Host can auto-fill all remaining seats with AI bots
+  const handleFillBots = async () => {
+    if (!currentSession) return;
+    const needed = currentSession.maxPlayers - roomPlayers.length;
+    for (let i = 0; i < needed; i++) {
+      await handleAddBot();
+    }
   };
 
   // ----------------------------------------------------------------------------
@@ -1073,6 +1084,204 @@ export const App: React.FC = () => {
       console.warn("Ludo Move Error:", err.message);
     }
   };
+
+  // ----------------------------------------------------------------------------
+  // AUTONOMOUS AI BOT PLAY CONTROLLER (Runs when it is a bot's turn)
+  // ----------------------------------------------------------------------------
+  const botTurnInProgressRef = useRef(false);
+
+  useEffect(() => {
+    if (!currentSession || (screen !== "game_uno" && screen !== "game_ludo")) return;
+
+    // Elect the lowest active human seat index to drive bot logic (prevents race conditions)
+    const humanSeats = roomPlayers
+      .filter((p) => !p.name.startsWith("Bot ") && !p.profileId.startsWith("bot_"))
+      .map((p) => p.seatIndex);
+    const minHumanSeat = humanSeats.length > 0 ? Math.min(...humanSeats) : 0;
+    const isBotRunner = mySeatIndex === minHumanSeat;
+    if (!isBotRunner) return;
+
+    // A. UNO BOT AUTONOMOUS TURN
+    if (screen === "game_uno" && unoState && unoState.winnerSeat === null) {
+      const activeSeat = unoState.currentTurnSeat;
+      const activePlayer = roomPlayers.find((p) => p.seatIndex === activeSeat);
+      const isBot =
+        activePlayer?.name.startsWith("Bot ") ||
+        activePlayer?.profileId.startsWith("bot_");
+
+      if (isBot && !botTurnInProgressRef.current) {
+        botTurnInProgressRef.current = true;
+
+        const timer = setTimeout(() => {
+          try {
+            // 1. Resolve pending challenge if bot is challenger
+            if (
+              unoState.pendingChallenge &&
+              unoState.pendingChallenge.challengerSeat === activeSeat
+            ) {
+              const next = applyUnoAction(unoState, {
+                type: "DECIDE_CHALLENGE",
+                challengerSeat: activeSeat,
+                challenge: Math.random() < 0.5,
+              });
+              setUnoState(next);
+              syncGameState(next);
+              botTurnInProgressRef.current = false;
+              return;
+            }
+
+            const botHand = unoState.playerHands[activeSeat] || [];
+            const playableCards = botHand.filter((c) =>
+              canPlayCard(c, unoState, activeSeat)
+            );
+
+            if (playableCards.length > 0) {
+              // Priority: Action cards > Color match > Wild
+              const chosenCard =
+                playableCards.find((c) => ["draw2", "skip", "reverse"].includes(c.value)) ||
+                playableCards.find((c) => c.color !== "wild") ||
+                playableCards[0];
+
+              let chosenColor: CardColor | undefined = undefined;
+              if (chosenCard.color === "wild") {
+                const counts: Record<string, number> = { red: 0, blue: 0, green: 0, yellow: 0 };
+                botHand.forEach((c) => {
+                  if (c.color !== "wild") counts[c.color] = (counts[c.color] || 0) + 1;
+                });
+                const sorted = (["red", "blue", "green", "yellow"] as CardColor[]).sort(
+                  (a, b) => counts[b] - counts[a]
+                );
+                chosenColor = sorted[0] || "red";
+              }
+
+              // Call UNO if bot will have 1 card left!
+              let stateToPlay = unoState;
+              if (botHand.length === 2) {
+                stateToPlay = applyUnoAction(unoState, {
+                  type: "CALL_UNO",
+                  seat: activeSeat,
+                });
+              }
+
+              const next = applyUnoAction(stateToPlay, {
+                type: "PLAY_CARD",
+                seat: activeSeat,
+                cardId: chosenCard.id,
+                chosenColor,
+              });
+              setUnoState(next);
+              syncGameState(next);
+            } else {
+              // Draw card
+              const drawnState = applyUnoAction(unoState, {
+                type: "DRAW_CARD",
+                seat: activeSeat,
+              });
+
+              // Check if newly drawn card is playable
+              const newHand = drawnState.playerHands[activeSeat] || [];
+              const newlyDrawn = newHand[newHand.length - 1];
+              if (newlyDrawn && canPlayCard(newlyDrawn, drawnState, activeSeat)) {
+                let chosenColor: CardColor | undefined = undefined;
+                if (newlyDrawn.color === "wild") chosenColor = "red";
+                const played = applyUnoAction(drawnState, {
+                  type: "PLAY_CARD",
+                  seat: activeSeat,
+                  cardId: newlyDrawn.id,
+                  chosenColor,
+                });
+                setUnoState(played);
+                syncGameState(played);
+              } else {
+                setUnoState(drawnState);
+                syncGameState(drawnState);
+              }
+            }
+          } catch (err) {
+            console.warn("UNO bot play error:", err);
+          } finally {
+            botTurnInProgressRef.current = false;
+          }
+        }, 1200);
+
+        return () => clearTimeout(timer);
+      }
+    }
+
+    // B. LUDO BOT AUTONOMOUS TURN
+    if (screen === "game_ludo" && ludoState && ludoState.turnPhase !== "GAME_OVER") {
+      const activeSeat = ludoState.currentTurnSeat;
+      const activePlayer = roomPlayers.find((p) => p.seatIndex === activeSeat);
+      const isBot =
+        activePlayer?.name.startsWith("Bot ") ||
+        activePlayer?.profileId.startsWith("bot_");
+
+      if (isBot && !botTurnInProgressRef.current) {
+        botTurnInProgressRef.current = true;
+
+        if (ludoState.turnPhase === "ROLL") {
+          const timer = setTimeout(() => {
+            try {
+              const rolled = applyLudoAction(ludoState, {
+                type: "ROLL_DICE",
+                seat: activeSeat,
+              });
+              setLudoState(rolled);
+              syncGameState(rolled);
+            } catch (e) {
+              console.warn("Ludo bot roll error:", e);
+            } finally {
+              botTurnInProgressRef.current = false;
+            }
+          }, 1100);
+          return () => clearTimeout(timer);
+        }
+
+        if (ludoState.turnPhase === "MOVE") {
+          const timer = setTimeout(() => {
+            try {
+              const movable = ludoState.movableTokenIds || [];
+              if (movable.length > 0) {
+                const playerTokens = ludoState.players[activeSeat]?.tokens || [];
+                // Strategy:
+                // 1. Reaching home
+                // 2. Base exit on 6
+                // 3. Move token furthest forward
+                const homeMove = movable.find((id) => {
+                  const t = playerTokens.find((tok) => tok.id === id);
+                  return t && t.step + (ludoState.currentDiceValue || 0) === ludoState.config.finishStep;
+                });
+                const baseExitMove = movable.find((id) => {
+                  const t = playerTokens.find((tok) => tok.id === id);
+                  return t && t.step === -1;
+                });
+                const furthestMove = movable.slice().sort((a, b) => {
+                  const ta = playerTokens.find((t) => t.id === a)?.step || -1;
+                  const tb = playerTokens.find((t) => t.id === b)?.step || -1;
+                  return tb - ta;
+                })[0];
+
+                const chosenId = homeMove || baseExitMove || furthestMove || movable[0];
+
+                const moved = applyLudoAction(ludoState, {
+                  type: "MOVE_TOKEN",
+                  seat: activeSeat,
+                  tokenId: chosenId,
+                });
+                setLudoState(moved);
+                syncGameState(moved);
+              }
+            } catch (e) {
+              console.warn("Ludo bot move error:", e);
+            } finally {
+              botTurnInProgressRef.current = false;
+            }
+          }, 1000);
+          return () => clearTimeout(timer);
+        }
+      }
+    }
+  }, [screen, unoState, ludoState, currentSession, roomPlayers, mySeatIndex]);
 
   // ----------------------------------------------------------------------------
   // 9. Real-Time Chat & Emoji Reactions
@@ -1288,6 +1497,7 @@ export const App: React.FC = () => {
             onLeaveRoom={handleLeaveRoom}
             onCloseRoom={handleCloseRoom}
             onAddBot={handleAddBot}
+            onFillBots={handleFillBots}
           />
         )}
 

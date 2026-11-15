@@ -11,7 +11,7 @@ import { canPlayCard } from "../engine/unoEngine";
 import { haptics } from "../../../telegram/haptics";
 import { sounds } from "../../../telegram/audio";
 import { getPlayerAvatar } from "../../../utils/avatar";
-import { RotateCw, RotateCcw, AlertTriangle, LogOut, X, ShieldAlert } from "lucide-react";
+import { RotateCw, RotateCcw, AlertTriangle, LogOut, ShieldAlert } from "lucide-react";
 import confetti from "canvas-confetti";
 
 export interface UnoPlayerInfo {
@@ -100,53 +100,60 @@ export const UnoTable: React.FC<UnoTableProps> = ({
     onDrawCard();
   };
 
-  // Call UNO
+  // Call UNO button
   const handleCallUnoClick = () => {
-    haptics.notification("success");
-    sounds.unoCall();
+    haptics.impact("heavy");
+    sounds.playCard();
     onCallUno();
   };
 
-  // Trigger confetti on victory
+  // Victory Confetti
   useEffect(() => {
-    if (gameState.winnerSeat !== null) {
+    if (gameState.winnerSeat !== null && gameState.winnerSeat !== undefined) {
       sounds.victory();
       confetti({
-        particleCount: 120,
-        spread: 80,
+        particleCount: 100,
+        spread: 70,
         origin: { y: 0.6 },
       });
     }
   }, [gameState.winnerSeat]);
 
-  // Seating relative to current user (Top, Left, Right)
+  // Seat positioning relative to current user
   const otherPlayers = players.filter((p) => p.seat !== currentSeat);
-  const topOpponent = otherPlayers[0];
-  const leftOpponent = otherPlayers.length >= 2 ? otherPlayers[1] : null;
-  const rightOpponent = otherPlayers.length >= 3 ? otherPlayers[2] : null;
+  const topOpponent = otherPlayers[0] || null;
+  const leftOpponent = otherPlayers[1] || null;
+  const rightOpponent = otherPlayers[2] || null;
   const currentUserInfo = players.find((p) => p.seat === currentSeat);
 
-  // Check if current user has 2 cards (needs to call UNO)
-  const shouldPromptUno = myHand.length === 2 && !gameState.unoDeclared[currentSeat];
+  const shouldPromptUno = myHand.length === 2 && isMyTurn && !gameState.unoDeclared[currentSeat];
+
+  // Dynamic card spacing in hand
+  const getCardMarginClass = () => {
+    if (myHand.length <= 4) return "first:ml-0 -ml-1 sm:-ml-2";
+    if (myHand.length <= 7) return "first:ml-0 -ml-3 sm:-ml-4";
+    if (myHand.length <= 10) return "first:ml-0 -ml-5 sm:-ml-6";
+    return "first:ml-0 -ml-6 sm:-ml-7";
+  };
 
   return (
     <div className="relative w-full h-full flex flex-col justify-between overflow-hidden bg-[#38166D] select-none text-slate-100 font-['Outfit',sans-serif]">
-      {/* Geometric SVG Background Pattern (Matching Reference Image 1) */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
+      {/* Geometric Scatter Pattern Background (Matching Reference Image 1) */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="scatter-pattern" width="60" height="60" patternUnits="userSpaceOnUse">
-              <polygon points="10,10 25,10 17,25" fill="none" stroke="#FFF" strokeWidth="1.5" />
-              <circle cx="45" cy="45" r="4" fill="none" stroke="#FFF" strokeWidth="1.5" />
-              <polygon points="50,15 58,25 42,25" fill="none" stroke="#FFF" strokeWidth="1" />
-              <rect x="15" y="42" width="6" height="6" fill="none" stroke="#FFF" strokeWidth="1" />
+            <pattern id="uno-scatter" width="60" height="60" patternUnits="userSpaceOnUse">
+              <polygon points="10,15 25,45 40,15" fill="none" stroke="#FFFFFF" strokeWidth="1.5" />
+              <polygon points="35,10 50,40 20,40" fill="none" stroke="#FFFFFF" strokeWidth="1.5" transform="rotate(45 35 25)" />
+              <circle cx="15" cy="45" r="4" fill="none" stroke="#FFFFFF" strokeWidth="1.5" />
+              <rect x="42" y="38" width="8" height="8" fill="none" stroke="#FFFFFF" strokeWidth="1.5" />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#scatter-pattern)" />
+          <rect width="100%" height="100%" fill="url(#uno-scatter)" />
         </svg>
       </div>
 
-      {/* 1. Header Bar: Direction, Turn Status & Exit Button */}
+      {/* 1. TOP HEADER BAR: Direction, Turn Status, Exit Match */}
       <div className="relative z-20 flex items-center justify-between px-3 py-1.5 bg-[#250B4B]/80 backdrop-blur-md border-b border-purple-500/30 shadow-md">
         <div className="flex items-center space-x-2">
           {/* Turn Direction Badge */}
@@ -170,7 +177,7 @@ export const UnoTable: React.FC<UnoTableProps> = ({
           )}
         </div>
 
-        {/* Turn Status Banner */}
+        {/* Turn Status Banner & Controls */}
         <div className="flex items-center space-x-2">
           {/* Catch UNO Alert Button */}
           {gameState.unoCatchWindow && gameState.unoCatchWindow.vulnerableSeat !== currentSeat && (
@@ -205,7 +212,7 @@ export const UnoTable: React.FC<UnoTableProps> = ({
         </div>
       </div>
 
-      {/* 2. TOP OPPONENT (Centered at Top) */}
+      {/* 2. TOP OPPONENT */}
       {topOpponent && (
         <div className="relative z-10 flex flex-col items-center pt-1">
           {/* Speech Bubble */}
@@ -216,12 +223,12 @@ export const UnoTable: React.FC<UnoTableProps> = ({
             </div>
           )}
 
-          {/* Horizontal Mini Card Fan */}
-          <div className="flex -space-x-3 mb-1">
-            {Array.from({ length: Math.min(gameState.playerHands[topOpponent.seat]?.length || 0, 8) }).map((_, i) => (
+          {/* Mini Card Fan */}
+          <div className="flex -space-x-2.5 mb-1">
+            {Array.from({ length: Math.min(gameState.playerHands[topOpponent.seat]?.length || 0, 7) }).map((_, i) => (
               <div
                 key={i}
-                className="w-5 h-8 rounded bg-[#121622] border border-white/80 shadow-md flex items-center justify-center overflow-hidden"
+                className="w-5 h-7 rounded bg-[#0F1422] border border-white shadow flex items-center justify-center overflow-hidden"
               >
                 <div className="w-3.5 h-5 rounded-full bg-red-600 -rotate-20" />
               </div>
@@ -229,22 +236,22 @@ export const UnoTable: React.FC<UnoTableProps> = ({
           </div>
 
           {/* Avatar with Turn Glow Ring */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5">
             <div className="relative">
               <img
                 src={getPlayerAvatar(topOpponent.avatar, topOpponent.name, topOpponent.seat.toString())}
                 alt={topOpponent.name}
-                className={`w-11 h-11 rounded-full object-cover border-2 shadow-xl transition-all ${
+                className={`w-10 h-10 rounded-full object-cover border-2 shadow-xl transition-all ${
                   gameState.currentTurnSeat === topOpponent.seat
                     ? "border-amber-400 ring-4 ring-amber-400 ring-offset-2 ring-offset-[#38166D] animate-pulse scale-110"
                     : "border-purple-400/60"
                 }`}
               />
-              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
+              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 shadow">
                 {gameState.playerHands[topOpponent.seat]?.length || 0}
               </span>
             </div>
-            <span className="text-xs font-black text-white drop-shadow max-w-[90px] truncate">
+            <span className="text-xs font-black text-white drop-shadow max-w-[85px] truncate">
               {topOpponent.name}
             </span>
           </div>
@@ -265,14 +272,14 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                 </div>
               )}
 
-              {/* Vertical Card Fan */}
-              <div className="flex flex-col -space-y-4 mb-1">
+              {/* Vertical Card Stack */}
+              <div className="flex flex-col -space-y-3.5 mb-1">
                 {Array.from({ length: Math.min(gameState.playerHands[leftOpponent.seat]?.length || 0, 5) }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-8 h-5 rounded bg-[#121622] border border-white/80 shadow-md flex items-center justify-center"
+                    className="w-7 h-4.5 rounded bg-[#0F1422] border border-white shadow flex items-center justify-center"
                   >
-                    <div className="w-5 h-3.5 rounded-full bg-red-600 rotate-12" />
+                    <div className="w-5 h-3 rounded-full bg-red-600 rotate-12" />
                   </div>
                 ))}
               </div>
@@ -281,29 +288,29 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                 <img
                   src={getPlayerAvatar(leftOpponent.avatar, leftOpponent.name, leftOpponent.seat.toString())}
                   alt={leftOpponent.name}
-                  className={`w-11 h-11 rounded-full object-cover border-2 shadow-xl transition-all ${
+                  className={`w-10 h-10 rounded-full object-cover border-2 shadow-xl transition-all ${
                     gameState.currentTurnSeat === leftOpponent.seat
                       ? "border-amber-400 ring-4 ring-amber-400 ring-offset-2 ring-offset-[#38166D] animate-pulse scale-110"
                       : "border-purple-400/60"
                   }`}
                 />
-                <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
+                <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 shadow">
                   {gameState.playerHands[leftOpponent.seat]?.length || 0}
                 </span>
               </div>
-              <span className="text-[11px] font-black text-white drop-shadow mt-1 text-center truncate max-w-[80px]">
+              <span className="text-[11px] font-black text-white drop-shadow mt-1 text-center truncate max-w-[75px]">
                 {leftOpponent.name}
               </span>
             </div>
           ) : (
-            <div className="w-10" />
+            <div className="w-8" />
           )}
         </div>
 
         {/* CENTER CIRCULAR PLAY ZONE (Yellow Ring Matching Reference Image 1) */}
         <div className="relative flex items-center justify-center">
           {/* Yellow Circular Play Ring */}
-          <div className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full border-4 border-amber-400/90 shadow-2xl flex items-center justify-center bg-purple-950/40 backdrop-blur-xs">
+          <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full border-4 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.3)] flex items-center justify-center bg-purple-950/40">
             {/* Ambient Active Color Glow */}
             <div
               className={`absolute inset-4 rounded-full blur-2xl opacity-40 transition-colors duration-500 ${
@@ -317,7 +324,7 @@ export const UnoTable: React.FC<UnoTableProps> = ({
               }`}
             />
 
-            <div className="flex items-center space-x-3 sm:space-x-5 z-10">
+            <div className="flex items-center space-x-3 sm:space-x-4 z-10">
               {/* Draw Pile (Tilted Face Down) */}
               <div
                 onClick={handleDrawClick}
@@ -326,11 +333,11 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                 }`}
               >
                 {/* 3D Stack Effect */}
-                <div className="absolute top-1 left-1 w-16 h-24 sm:w-20 sm:h-28 rounded-xl bg-slate-900 border border-slate-700 -rotate-6 shadow-md" />
-                <div className="absolute top-0.5 left-0.5 w-16 h-24 sm:w-20 sm:h-28 rounded-xl bg-indigo-950 border border-indigo-800 rotate-3 shadow-md" />
+                <div className="absolute top-1 left-1 w-14 h-22 sm:w-16 sm:h-26 rounded-xl bg-slate-900 border border-slate-700 -rotate-6 shadow-md" />
+                <div className="absolute top-0.5 left-0.5 w-14 h-22 sm:w-16 sm:h-26 rounded-xl bg-indigo-950 border border-indigo-800 rotate-3 shadow-md" />
                 <UnoCardView faceDown size="md" />
                 {isMyTurn && (
-                  <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-black text-amber-300 uppercase whitespace-nowrap drop-shadow bg-slate-950/80 px-1.5 py-0.5 rounded-full border border-amber-400">
+                  <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[9px] font-black text-amber-300 uppercase whitespace-nowrap drop-shadow bg-slate-950/90 px-2 py-0.5 rounded-full border border-amber-400">
                     Draw
                   </span>
                 )}
@@ -346,7 +353,7 @@ export const UnoTable: React.FC<UnoTableProps> = ({
           {/* Iconic Yellow Oval UNO Button (Matching Reference Image 1) */}
           <button
             onClick={handleCallUnoClick}
-            className={`absolute -bottom-2 right-0 sm:right-2 z-20 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-red-600 font-black text-sm tracking-tighter uppercase shadow-2xl border-2 border-white transition-transform active:scale-90 ${
+            className={`absolute -bottom-2 -right-1 sm:right-1 z-20 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 text-red-600 font-black text-xs sm:text-sm tracking-tighter uppercase shadow-2xl border-2 border-white transition-transform active:scale-90 ${
               shouldPromptUno
                 ? "animate-bounce ring-4 ring-red-500 scale-110"
                 : "hover:scale-105"
@@ -368,14 +375,14 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                 </div>
               )}
 
-              {/* Vertical Card Fan */}
-              <div className="flex flex-col -space-y-4 mb-1">
+              {/* Vertical Card Stack */}
+              <div className="flex flex-col -space-y-3.5 mb-1">
                 {Array.from({ length: Math.min(gameState.playerHands[rightOpponent.seat]?.length || 0, 5) }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-8 h-5 rounded bg-[#121622] border border-white/80 shadow-md flex items-center justify-center"
+                    className="w-7 h-4.5 rounded bg-[#0F1422] border border-white shadow flex items-center justify-center"
                   >
-                    <div className="w-5 h-3.5 rounded-full bg-red-600 -rotate-12" />
+                    <div className="w-5 h-3 rounded-full bg-red-600 -rotate-12" />
                   </div>
                 ))}
               </div>
@@ -384,30 +391,30 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                 <img
                   src={getPlayerAvatar(rightOpponent.avatar, rightOpponent.name, rightOpponent.seat.toString())}
                   alt={rightOpponent.name}
-                  className={`w-11 h-11 rounded-full object-cover border-2 shadow-xl transition-all ${
+                  className={`w-10 h-10 rounded-full object-cover border-2 shadow-xl transition-all ${
                     gameState.currentTurnSeat === rightOpponent.seat
                       ? "border-amber-400 ring-4 ring-amber-400 ring-offset-2 ring-offset-[#38166D] animate-pulse scale-110"
                       : "border-purple-400/60"
                   }`}
                 />
-                <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
+                <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 shadow">
                   {gameState.playerHands[rightOpponent.seat]?.length || 0}
                 </span>
               </div>
-              <span className="text-[11px] font-black text-white drop-shadow mt-1 text-center truncate max-w-[80px]">
+              <span className="text-[11px] font-black text-white drop-shadow mt-1 text-center truncate max-w-[75px]">
                 {rightOpponent.name}
               </span>
             </div>
           ) : (
-            <div className="w-10" />
+            <div className="w-8" />
           )}
         </div>
       </div>
 
-      {/* 4. CURRENT USER BOTTOM HAND & CONTROLS */}
-      <div className="relative z-20 w-full pb-2 px-2 bg-gradient-to-t from-sky-950/90 via-purple-950/80 to-transparent pt-3 rounded-t-3xl border-t border-purple-500/20">
-        {/* User Status Bar & Speech Bubble */}
-        <div className="flex items-center justify-between max-w-md mx-auto px-2 mb-2">
+      {/* 4. CURRENT USER BOTTOM HAND & CURVED BLUE TRAY (Matching Reference Image 1) */}
+      <div className="relative z-20 w-full pt-3 pb-2 px-3 bg-[#008AE6] rounded-t-[32px] border-t-4 border-[#006BB3] shadow-2xl flex flex-col">
+        {/* User Avatar & Info Row (Left aligned like in Reference Image 1) */}
+        <div className="flex items-center justify-between px-2 mb-2">
           <div className="relative flex items-center space-x-2">
             {/* Speech Bubble */}
             {speechBubbles[currentSeat] && (
@@ -422,15 +429,18 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                 src={getPlayerAvatar(currentUserInfo?.avatar, currentUserInfo?.name, currentSeat.toString())}
                 alt="You"
                 className={`w-10 h-10 rounded-full object-cover border-2 shadow-xl ${
-                  isMyTurn ? "border-amber-400 ring-4 ring-amber-400 ring-offset-2 ring-offset-[#38166D] animate-pulse" : "border-slate-400"
+                  isMyTurn ? "border-amber-400 ring-4 ring-amber-400 ring-offset-2 ring-offset-[#008AE6] animate-pulse" : "border-white"
                 }`}
               />
+              <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 shadow">
+                {myHand.length}
+              </span>
             </div>
             <div>
-              <span className="text-xs font-black text-white">
+              <span className="text-xs font-black text-white drop-shadow-sm">
                 {currentUserInfo?.name || "You"} (You)
               </span>
-              <div className="text-[10px] font-bold text-amber-300">
+              <div className="text-[10px] font-bold text-amber-200">
                 {myHand.length} {myHand.length === 1 ? "Card Left!" : "Cards"}
               </div>
             </div>
@@ -440,16 +450,16 @@ export const UnoTable: React.FC<UnoTableProps> = ({
           {shouldPromptUno && (
             <button
               onClick={handleCallUnoClick}
-              className="bg-rose-600 hover:bg-rose-500 text-white font-black text-xs px-3 py-1.5 rounded-full shadow-xl animate-pulse border border-white"
+              className="bg-rose-600 hover:bg-rose-500 text-white font-black text-xs px-3.5 py-1.5 rounded-full shadow-xl animate-pulse border-2 border-white"
             >
-              ⚠️ CALL UNO NOW!
+              ⚠️ CALL UNO!
             </button>
           )}
         </div>
 
-        {/* Fanned / Overlapping Cards Tray */}
-        <div className="flex items-center justify-center overflow-x-auto py-2 px-4 scrollbar-none max-w-full">
-          <div className="flex -space-x-8 sm:-space-x-10 items-end min-h-[120px] pb-1">
+        {/* Fanned Cards Strip (High contrast, 100% opaque, neatly spaced) */}
+        <div className="w-full overflow-x-auto py-2 px-1 scrollbar-none flex justify-center">
+          <div className="flex items-end min-h-[115px] sm:min-h-[125px] pb-1 px-3">
             {myHand.map((card, idx) => {
               const playable = isMyTurn && canPlayCard(card, gameState, currentSeat);
 
@@ -460,10 +470,10 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                   style={{
                     zIndex: idx + 1,
                   }}
-                  className={`transition-all duration-200 transform ${
+                  className={`transition-all duration-200 transform ${getCardMarginClass()} ${
                     playable
-                      ? "-translate-y-4 hover:-translate-y-6 hover:scale-110 cursor-pointer drop-shadow-2xl"
-                      : "translate-y-0 opacity-60 grayscale-[30%] cursor-not-allowed"
+                      ? "-translate-y-4 sm:-translate-y-6 hover:-translate-y-8 hover:scale-110 cursor-pointer drop-shadow-2xl"
+                      : "translate-y-0 opacity-100 brightness-85 cursor-not-allowed hover:brightness-100"
                   }`}
                 >
                   <UnoCardView
@@ -519,24 +529,24 @@ export const UnoTable: React.FC<UnoTableProps> = ({
             </div>
 
             <div>
-              <h3 className="text-base font-black text-white">Leave Match?</h3>
+              <h3 className="text-base font-black text-white">Leave or Close Match?</h3>
               <p className="text-xs text-slate-400 mt-1">
                 {isHost
-                  ? "As host, you can close the match for everyone or leave."
-                  : "Are you sure you want to exit to the lobby?"}
+                  ? "As host, you can leave the match or completely close the room for everyone."
+                  : "Are you sure you want to leave this game? Your seat will be forfeited."}
               </p>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 pt-2">
               {isHost && onCloseMatch && (
                 <button
                   onClick={() => {
                     setShowExitModal(false);
                     onCloseMatch();
                   }}
-                  className="w-full py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow transition-all active:scale-95"
+                  className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs uppercase shadow tracking-wider"
                 >
-                  🛑 Close & Disband Room
+                  Close & Disband Room
                 </button>
               )}
 
@@ -546,7 +556,7 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                     setShowExitModal(false);
                     onLeaveMatch();
                   }}
-                  className="w-full py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 active:scale-95"
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase border border-slate-700"
                 >
                   Leave Match
                 </button>
@@ -554,11 +564,47 @@ export const UnoTable: React.FC<UnoTableProps> = ({
 
               <button
                 onClick={() => setShowExitModal(false)}
-                className="w-full py-2 rounded-2xl text-slate-400 font-bold text-xs hover:text-white"
+                className="w-full py-2 text-xs font-bold text-slate-400 hover:text-white"
               >
                 Cancel
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Match Winner Game Over Modal */}
+      {gameState.winnerSeat !== null && gameState.winnerSeat !== undefined && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#161B26] border-2 border-amber-500/80 rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl space-y-3">
+            <div className="text-4xl animate-bounce">🏆</div>
+            <h2 className="text-xl font-black text-white">UNO CHAMPION!</h2>
+            <div className="text-base font-bold text-amber-400">
+              {players.find((p) => p.seat === gameState.winnerSeat)?.name || `Seat ${gameState.winnerSeat + 1}`} Won!
+            </div>
+            <p className="text-xs text-slate-400">
+              {gameState.winnerSeat === currentSeat
+                ? "Congratulations! You emptied your hand first!"
+                : "Good game! Better luck next round!"}
+            </p>
+
+            {onRematch && isHost && (
+              <button
+                onClick={onRematch}
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 rounded-2xl shadow-lg mt-2 text-xs uppercase tracking-wider"
+              >
+                Play Again
+              </button>
+            )}
+
+            {onLeaveMatch && (
+              <button
+                onClick={onLeaveMatch}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-2xl border border-slate-700 text-xs uppercase"
+              >
+                Back to Lobby
+              </button>
+            )}
           </div>
         </div>
       )}
