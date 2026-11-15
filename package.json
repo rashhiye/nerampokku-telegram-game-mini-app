@@ -1,0 +1,19 @@
+{
+  "name": "gameverse",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "frontend",
+    "bot"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "bot": "npm run dev --workspace=bot"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.7"
+  }
+}
