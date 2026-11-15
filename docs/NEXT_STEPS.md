@@ -302,6 +302,10 @@ Follow this checklist once deployed to verify full platform operation:
   - [ ] Test extra roll upon rolling a 6.
   - [ ] Test token capture on standard squares vs safe immunity on star squares.
   - [ ] Test exact roll requirement to enter Home center.
+- [ ] **Multiplayer LUDO (5-Player Pentagonal):**
+  - [ ] Create a 5-player LUDO room.
+  - [ ] Verify dedicated pentagonal SVG board with 5 distinct colors and 60-square track.
+  - [ ] Test token paths and 5 separate home runways.
 - [ ] **Multiplayer LUDO (6-Player Hexagonal):**
   - [ ] Create a 6-player LUDO room.
   - [ ] Verify dedicated hexagonal SVG board with 6 distinct colors and 72-square track.

@@ -29,6 +29,24 @@ export const LUDO_CONFIG_4P: LudoBoardConfig = {
   finishStep: 56, // 51 outer steps (0 to 50) + 5 home stretch (51 to 55) + 1 (56 = Home)
 };
 
+// 5-PLAYER CONFIGURATION (PENTAGONAL)
+export const LUDO_CONFIG_5P: LudoBoardConfig = {
+  playerCount: 5,
+  colors: ["red", "green", "yellow", "blue", "purple"],
+  totalOuterSquares: 60,
+  stepsPerSector: 12,
+  startPositions: {
+    0: 0,   // Red
+    1: 12,  // Green
+    2: 24,  // Yellow
+    3: 36,  // Blue
+    4: 48,  // Purple
+  },
+  safeSquares: [0, 7, 12, 19, 24, 31, 36, 43, 48, 55], // 5 starts + 5 stars
+  homeStretchLength: 5,
+  finishStep: 64, // 59 outer steps (0 to 58) + 5 home stretch (59 to 63) + 1 (64 = Home)
+};
+
 // 6-PLAYER CONFIGURATION (HEXAGONAL)
 export const LUDO_CONFIG_6P: LudoBoardConfig = {
   playerCount: 6,
@@ -79,8 +97,13 @@ export function getGlobalTrackIndex(
 /**
  * Initializes a new authoritative Ludo game state.
  */
-export function createLudoGame(playerCount: 4 | 6): LudoGameState {
-  const config = playerCount === 6 ? LUDO_CONFIG_6P : LUDO_CONFIG_4P;
+export function createLudoGame(playerCount: 4 | 5 | 6): LudoGameState {
+  const config =
+    playerCount === 6
+      ? LUDO_CONFIG_6P
+      : playerCount === 5
+      ? LUDO_CONFIG_5P
+      : LUDO_CONFIG_4P;
   const players: Record<number, LudoPlayer> = {};
 
   for (let seat = 0; seat < playerCount; seat++) {

@@ -6,6 +6,7 @@
 import React from "react";
 import { LudoGameState } from "../engine/types";
 import { Board4P } from "./Board4P";
+import { Board5P } from "./Board5P";
 import { Board6P } from "./Board6P";
 import { LudoDice } from "./LudoDice";
 import { Trophy } from "lucide-react";
@@ -81,6 +82,8 @@ export const LudoTable: React.FC<LudoTableProps> = ({
       <div className="flex-1 flex items-center justify-center relative my-1">
         {gameState.playerCount === 6 ? (
           <Board6P gameState={gameState} onTokenClick={onMoveToken} />
+        ) : gameState.playerCount === 5 ? (
+          <Board5P gameState={gameState} onTokenClick={onMoveToken} />
         ) : (
           <Board4P gameState={gameState} onTokenClick={onMoveToken} />
         )}

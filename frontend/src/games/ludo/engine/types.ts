@@ -21,7 +21,7 @@ export interface LudoToken {
 }
 
 export interface LudoBoardConfig {
-  playerCount: 4 | 6;
+  playerCount: 4 | 5 | 6;
   colors: LudoColor[];
   totalOuterSquares: number;
   stepsPerSector: number;
@@ -40,7 +40,7 @@ export interface LudoPlayer {
 }
 
 export interface LudoGameState {
-  playerCount: 4 | 6;
+  playerCount: 4 | 5 | 6;
   config: LudoBoardConfig;
   players: Record<number, LudoPlayer>;
   currentTurnSeat: number;

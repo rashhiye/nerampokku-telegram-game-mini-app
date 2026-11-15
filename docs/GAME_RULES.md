@@ -45,9 +45,15 @@ A card is legal to play if:
 - 8 Safe Squares (4 start squares + 4 star squares).
 - 5-step colored home stretch + central finish center. Total 56 steps to win.
 
+### 5-Player Pentagonal Board Layout
+- Regular pentagonal symmetry ($72^\circ$ radial arms) with 5 color bases: Red (0), Green (12), Yellow (24), Blue (36), Purple (48).
+- 60-square common outer perimeter track (5 sectors $\times$ 12 squares).
+- 10 Safe Squares (5 start squares + 5 star squares at indices: 0, 7, 12, 19, 24, 31, 36, 43, 48, 55).
+- 5-step colored home runway + central star pentagon. Total 64 steps to win.
+
 ### 6-Player Hexagonal Board Layout
-- Regular hexagonal symmetry with 6 color bases: Red (0), Green (12), Yellow (24), Blue (36), Orange (48), Purple (60).
-- 72-square common perimeter track.
+- Regular hexagonal symmetry ($60^\circ$ radial arms) with 6 color bases: Red (0), Green (12), Yellow (24), Blue (36), Orange (48), Purple (60).
+- 72-square common perimeter track (6 sectors $\times$ 12 squares).
 - 12 Safe Squares (6 start squares + 6 star squares).
 - 5-step colored home runway + central star finish. Total 76 steps to win.
 

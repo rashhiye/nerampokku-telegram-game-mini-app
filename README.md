@@ -1,7 +1,7 @@
 # 🎮 നേരംപോക്ക് — GAME BOT
 
 > **കളിക്കാം... സമയം പോക്കാം!**  
-> **Multiplayer Gaming & Entertainment for Telegram Mini Apps** featuring two fully-playable multiplayer games: **UNO** (3–6 Players) and **LUDO** (4 & 6 Players Dedicated Boards).
+> **Multiplayer Gaming & Entertainment for Telegram Mini Apps** featuring two fully-playable multiplayer games: **UNO** (3–6 Players) and **LUDO** (4, 5 & 6 Players Dedicated Boards).
 
 [![Brand](https://img.shields.io/badge/Brand-നേരംപോക്ക്-EF4444.svg)]()
 [![Descriptor](https://img.shields.io/badge/Descriptor-GAME%20BOT-F59E0B.svg)]()
@@ -25,8 +25,8 @@
   - Configurable house rules (+2/+4 stacking, jump-in, 7-0 hand rotation).
   - "Call UNO!" and "Catch UNO!" grace periods and penalty draws.
   - Original vector card artwork and responsive poker table layout.
-- **Authoritative LUDO Engine (4 & 6 Players):**
-  - Dedicated 4-Player 15x15 board & Dedicated 6-Player Hexagonal board.
+- **Authoritative LUDO Engine (4, 5 & 6 Players):**
+  - Dedicated 4-Player 15x15 board, Dedicated 5-Player Pentagonal board & Dedicated 6-Player Hexagonal board.
   - Server-authoritative dice rolling (CSPRNG).
   - Starting base exit on 6, extra turns, and three consecutive sixes penalty.
   - Opponent captures on non-safe squares; Star squares 100% safe.

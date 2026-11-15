@@ -70,6 +70,19 @@ export const App: React.FC = () => {
       createdAt: new Date().toISOString(),
     },
     {
+      id: "demo-ludo-5p",
+      groupId: "-1001234567890",
+      groupTitle: "നേരംപോക്ക് Official Club",
+      gameType: "ludo",
+      status: "waiting",
+      hostId: "user-4",
+      hostName: "Elena Rostova",
+      minPlayers: 4,
+      maxPlayers: 5,
+      currentPlayerCount: 3,
+      createdAt: new Date().toISOString(),
+    },
+    {
       id: "demo-ludo-6p",
       groupId: "-1001234567890",
       groupTitle: "നേരംപോക്ക് Official Club",
@@ -165,27 +178,28 @@ export const App: React.FC = () => {
       });
     }
 
+    if (session.maxPlayers >= 5) {
+      mockPlayers.push({
+        id: "mp_4",
+        profileId: "100000005",
+        name: "Marcus Vance",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60",
+        seatIndex: 4,
+        isHost: false,
+        status: "waiting",
+      });
+    }
+
     if (session.maxPlayers === 6) {
-      mockPlayers.push(
-        {
-          id: "mp_4",
-          profileId: "100000005",
-          name: "Marcus Vance",
-          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60",
-          seatIndex: 4,
-          isHost: false,
-          status: "waiting",
-        },
-        {
-          id: "mp_5",
-          profileId: "100000006",
-          name: "Chloe King",
-          avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=60&h=60",
-          seatIndex: 5,
-          isHost: false,
-          status: "waiting",
-        }
-      );
+      mockPlayers.push({
+        id: "mp_5",
+        profileId: "100000006",
+        name: "Chloe King",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=60&h=60",
+        seatIndex: 5,
+        isHost: false,
+        status: "waiting",
+      });
     }
 
     setRoomPlayers(mockPlayers);
@@ -226,7 +240,9 @@ export const App: React.FC = () => {
       setUnoState(initialUno);
       setScreen("game_uno");
     } else {
-      const pCount = (roomPlayers.length >= 6 ? 6 : 4) as 4 | 6;
+      const pCount = (
+        roomPlayers.length >= 6 ? 6 : roomPlayers.length === 5 ? 5 : 4
+      ) as 4 | 5 | 6;
       const initialLudo = createLudoGame(pCount);
       setLudoState(initialLudo);
       setScreen("game_ludo");
@@ -466,7 +482,7 @@ export const App: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-3xl bg-[#161B26] border border-slate-800 space-y-2 text-xs text-slate-300">
-              <h3 className="font-bold text-blue-400 text-sm">🎲 LUDO (4 & 6 Players)</h3>
+              <h3 className="font-bold text-blue-400 text-sm">🎲 LUDO (4, 5 & 6 Players)</h3>
               <p>• തട്ടിൽ നിന്ന് ഇറങ്ങാൻ നിർബന്ധമായും <strong>6</strong> വീഴണം.</p>
               <p>• 6 വീണാൽ വീണ്ടും റോൾ ചെയ്യാം (തുടർച്ചയായി 3 പ്രാവശ്യം 6 വീണാൽ ചാൻസ് പോകും).</p>
               <p>• സേഫ് അല്ലാത്ത കട്ടകളിൽ ഉള്ള എതിരാളിയുടെ കോയിൻ വെട്ടി ബേസിലേക്ക് അയക്കാം!</p>

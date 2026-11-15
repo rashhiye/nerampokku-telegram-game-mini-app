@@ -246,7 +246,7 @@ export const LobbyBrowser: React.FC<LobbyBrowserProps> = ({
                     }`}
                   >
                     <div className="font-black text-base">🎲 LUDO</div>
-                    <span className="text-[10px] text-slate-400">4 or 6 Players</span>
+                    <span className="text-[10px] text-slate-400">4, 5 or 6 Players</span>
                   </button>
                 </div>
               </div>
@@ -257,7 +257,7 @@ export const LobbyBrowser: React.FC<LobbyBrowserProps> = ({
                   Player Count
                 </label>
                 <div className="flex space-x-2">
-                  {(selectedGame === "uno" ? [3, 4, 5, 6] : [4, 6]).map((count) => (
+                  {(selectedGame === "uno" ? [3, 4, 5, 6] : [4, 5, 6]).map((count) => (
                     <button
                       key={count}
                       type="button"

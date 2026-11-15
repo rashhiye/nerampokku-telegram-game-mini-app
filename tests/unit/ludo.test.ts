@@ -9,6 +9,7 @@ import {
   applyLudoAction,
   getGlobalTrackIndex,
   LUDO_CONFIG_4P,
+  LUDO_CONFIG_5P,
   LUDO_CONFIG_6P,
 } from "../../frontend/src/games/ludo/engine/ludoEngine";
 
@@ -41,6 +42,43 @@ describe("LUDO Engine: 4-Player Board Mathematics", () => {
     // Blue (Seat 3): Start is 39
     expect(getGlobalTrackIndex(3, 0, LUDO_CONFIG_4P)).toBe(39);
     expect(getGlobalTrackIndex(3, 15, LUDO_CONFIG_4P)).toBe((39 + 15) % 52); // 54 % 52 = 2
+  });
+});
+
+describe("LUDO Engine: 5-Player Pentagonal Board Mathematics", () => {
+  it("should initialize 5 distinct players with 60-square pentagonal perimeter track", () => {
+    const game = createLudoGame(5);
+    expect(game.playerCount).toBe(5);
+    expect(game.config.totalOuterSquares).toBe(60);
+    expect(game.config.safeSquares.length).toBe(10); // 5 starts + 5 stars
+    expect(game.config.colors).toEqual([
+      "red",
+      "green",
+      "yellow",
+      "blue",
+      "purple",
+    ]);
+
+    // Check starts spaced 12 squares apart
+    expect(game.config.startPositions[0]).toBe(0);  // Red
+    expect(game.config.startPositions[1]).toBe(12); // Green
+    expect(game.config.startPositions[2]).toBe(24); // Yellow
+    expect(game.config.startPositions[3]).toBe(36); // Blue
+    expect(game.config.startPositions[4]).toBe(48); // Purple
+
+    // Verify 10 safe squares
+    expect(game.config.safeSquares).toEqual([0, 7, 12, 19, 24, 31, 36, 43, 48, 55]);
+    expect(game.config.finishStep).toBe(64);
+  });
+
+  it("should calculate correct global track positions for all 5 pentagonal arms", () => {
+    expect(getGlobalTrackIndex(0, 0, LUDO_CONFIG_5P)).toBe(0);
+    expect(getGlobalTrackIndex(1, 0, LUDO_CONFIG_5P)).toBe(12);
+    expect(getGlobalTrackIndex(4, 0, LUDO_CONFIG_5P)).toBe(48);
+    // Boundary wrapping for seat 4: (48 + 15) % 60 = 63 % 60 = 3
+    expect(getGlobalTrackIndex(4, 15, LUDO_CONFIG_5P)).toBe(3);
+    // Home stretch boundary: step 59 is inside home stretch, so global track returns null
+    expect(getGlobalTrackIndex(4, 59, LUDO_CONFIG_5P)).toBeNull();
   });
 });
 
