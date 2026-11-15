@@ -4,12 +4,30 @@
 > **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
 > **Descriptor:** GAME BOT  
 
-## 1. Cloudflare Pages (Frontend)
+## 1. Cloudflare Pages / Workers (Frontend)
 
+There are two equally supported ways to deploy on Cloudflare:
+
+### Option A: Cloudflare Workers (or Unified Deploy with Wrangler — Recommended)
+With the included `wrangler.json`, Cloudflare builds and deploys directly:
+1. Connect your GitHub repository to Cloudflare (Workers & Pages).
+2. Root directory: `/` (Repository Root).
+3. Build command: `npm run build`.
+4. Deploy command: `npx wrangler deploy` (or automatic).
+5. Environment Variables:
+   - `VITE_SUPABASE_URL`: `https://your-project.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY`: `eyJhbGciOi...`
+   - `VITE_TELEGRAM_BOT_USERNAME`: `NeramPokkuBot`
+
+### Option B: Classic Cloudflare Pages
 1. Connect your GitHub repository to Cloudflare Pages.
-2. Select root directory: `frontend`.
-3. Set build command: `npm run build`.
-4. Set output directory: `dist`.
+2. Select root directory: `/` (or `frontend`).
+3. If root is `/`:
+   - Build command: `npm run build`
+   - Build output directory: `frontend/dist`
+4. If root is `frontend`:
+   - Build command: `npm run build`
+   - Build output directory: `dist`
 5. Configure Environment Variables:
    - `VITE_SUPABASE_URL`: `https://your-project.supabase.co`
    - `VITE_SUPABASE_ANON_KEY`: `eyJhbGciOi...`

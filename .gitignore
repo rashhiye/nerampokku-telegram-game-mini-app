@@ -21,7 +21,8 @@ lerna-debug.log*
 # IDE / OS
 .DS_Store
 Thumbs.db
-.vscode/
+.vscode/*
+!.vscode/settings.json
 .idea/
 
 # Testing / Coverage

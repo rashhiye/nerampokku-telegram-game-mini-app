@@ -75,7 +75,7 @@ serve(async (req) => {
           `_കളിക്കാം... സമയം പോക്കാം!_\n\n` +
           `ടെലിഗ്രാം ഗ്രൂപ്പിൽ സുഹൃത്തുക്കളോടൊപ്പം തത്സമയം കളിക്കാം:\n\n` +
           `🃏 *UNO* (3–6 Players): Action Cards, Reverse, Wild +4 Challenge, ആവേശപ്പോരാട്ടം!\n` +
-          `🎲 *LUDO* (4 & 6 Players): ഒറിജിനൽ 4P & 6P Hexagonal ബോർഡുകൾ, ലൈവ് ഡൈസ് റോളിംഗ്!\n\n` +
+          `🎲 *LUDO* (4, 5 & 6 Players): ഒറിജിനൽ 4P, 5P Pentagonal & 6P Hexagonal ബോർഡുകൾ, ലൈവ് ഡൈസ് റോളിംഗ്!\n\n` +
           `💬 ഇൻ-ഗെയിം ചാറ്റും ലൈവ് ഇമോജി റിയാക്ഷനുകളും!\n\n` +
           `👉 എന്നെ ഒരു ഗ്രൂപ്പിലേക്ക് ആഡ് ചെയ്ത് /games എന്ന് അയക്കൂ! റൂം കോഡ് ആവശ്യമില്ല!`;
 
@@ -142,7 +142,7 @@ serve(async (req) => {
           `• Skip, Reverse, Draw Two (+2) ആക്ഷൻ കാർഡുകൾ\n` +
           `• Wild +4 ചലഞ്ച് ചെയ്യാം!\n` +
           `• കയ്യിൽ 1 കാർഡ് ആവുമ്പോൾ "UNO!" എന്ന് വിളിക്കുക\n\n` +
-          `*LUDO (4 & 6 Players):*\n` +
+          `*LUDO (4, 5 & 6 Players):*\n` +
           `• ബേസിൽ നിന്ന് ഇറങ്ങാൻ 6 വീഴണം\n` +
           `• 6 വീണാൽ എക്സ്ട്രാ റോൾ (തുടർച്ചയായി 3 പ്രാവശ്യം 6 വീണാൽ ചാൻസ് പോകും)\n` +
           `• എതിരാളിയുടെ കോയിൻ വെട്ടാം; സ്റ്റാർ കട്ടകൾ 100% സേഫ് ആണ്\n` +
@@ -152,22 +152,6 @@ serve(async (req) => {
           `/profile — നിങ്ങളുടെ സ്റ്റാറ്റ്സ് കാണാൻ\n` +
           `/stats — ലീഡർബോർഡ് കാണാൻ\n` +
           `/help — ഈ ഗൈഡ് കാണാൻ`;
-          `• Skip skips next player\n` +
-          `• Reverse reverses direction (skips in 2-player)\n` +
-          `• Draw Two adds 2 cards and skips\n` +
-          `• Wild +4 can be challenged!\n` +
-          `• Tap "UNO!" before playing your 2nd-to-last card\n\n` +
-          `*LUDO (4 & 6 Players):*\n` +
-          `• Roll a 6 to enter the track\n` +
-          `• Rolling 6 grants an extra roll (max 3 times)\n` +
-          `• Land on opponents to capture and send them to base\n` +
-          `• Star squares and start squares are 100% SAFE\n` +
-          `• Reach the center with all 4 tokens to win!\n\n` +
-          `*Commands:*\n` +
-          `/games — Open group games\n` +
-          `/profile — View your stats\n` +
-          `/stats — View top leaderboard\n` +
-          `/help — View this guide`;
 
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: "POST",
