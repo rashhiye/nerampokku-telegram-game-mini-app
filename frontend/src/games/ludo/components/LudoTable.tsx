@@ -25,6 +25,7 @@ interface LudoTableProps {
   gameState: LudoGameState;
   currentSeat: number;
   players: LudoPlayerInfo[];
+  turnSecondsLeft?: number;
   speechBubbles?: Record<number, { text: string; expiresAt: number }>;
   isHost?: boolean;
   onRollDice: () => void;
@@ -39,6 +40,7 @@ export const LudoTable: React.FC<LudoTableProps> = ({
   gameState,
   currentSeat,
   players,
+  turnSecondsLeft = 15,
   speechBubbles = {},
   isHost = false,
   onRollDice,
@@ -86,19 +88,24 @@ export const LudoTable: React.FC<LudoTableProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
-          <span
-            className={`text-xs font-extrabold px-3 py-1 rounded-full border shadow transition-all ${
-              isMyTurn
+          <div
+            className={`text-xs font-black px-3 py-1 rounded-full border shadow flex items-center space-x-1.5 transition-all ${
+              turnSecondsLeft <= 5
+                ? "bg-rose-600 text-white border-white animate-pulse ring-2 ring-rose-400"
+                : isMyTurn
                 ? "bg-emerald-500 text-slate-950 border-white ring-2 ring-emerald-300 animate-pulse"
                 : "bg-slate-800 border-slate-700 text-slate-300"
             }`}
           >
-            {isMyTurn
-              ? canRoll
-                ? "🎲 YOUR TURN: ROLL DICE!"
-                : "♟️ YOUR TURN: MOVE TOKEN!"
-              : `⏳ ${activePlayerName}'s Turn`}
-          </span>
+            <span className="font-mono text-sm font-extrabold">{turnSecondsLeft}s</span>
+            <span>
+              {isMyTurn
+                ? canRoll
+                  ? "• ROLL DICE!"
+                  : "• MOVE TOKEN!"
+                : `• ${activePlayerName}`}
+            </span>
+          </div>
 
           {/* Exit Match Button */}
           <button

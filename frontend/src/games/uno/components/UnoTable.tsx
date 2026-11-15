@@ -25,6 +25,7 @@ interface UnoTableProps {
   gameState: UnoGameState;
   currentSeat: number;
   players: UnoPlayerInfo[];
+  turnSecondsLeft?: number;
   speechBubbles?: Record<number, { text: string; expiresAt: number }>;
   isHost?: boolean;
   onPlayCard: (cardId: string, chosenColor?: CardColor) => void;
@@ -41,6 +42,7 @@ export const UnoTable: React.FC<UnoTableProps> = ({
   gameState,
   currentSeat,
   players,
+  turnSecondsLeft = 15,
   speechBubbles = {},
   isHost = false,
   onPlayCard,
@@ -112,8 +114,8 @@ export const UnoTable: React.FC<UnoTableProps> = ({
     if (gameState.winnerSeat !== null && gameState.winnerSeat !== undefined) {
       sounds.victory();
       confetti({
-        particleCount: 100,
-        spread: 70,
+        particleCount: 120,
+        spread: 80,
         origin: { y: 0.6 },
       });
     }
@@ -128,16 +130,17 @@ export const UnoTable: React.FC<UnoTableProps> = ({
 
   const shouldPromptUno = myHand.length === 2 && isMyTurn && !gameState.unoDeclared[currentSeat];
 
-  // Dynamic card spacing in hand
-  const getCardMarginClass = () => {
-    if (myHand.length <= 4) return "first:ml-0 -ml-1 sm:-ml-2";
-    if (myHand.length <= 7) return "first:ml-0 -ml-3 sm:-ml-4";
-    if (myHand.length <= 10) return "first:ml-0 -ml-5 sm:-ml-6";
+  // Dynamic margin for card fan
+  const getCardMargin = () => {
+    if (myHand.length <= 4) return "first:ml-0 mx-1 sm:mx-1.5";
+    if (myHand.length <= 6) return "first:ml-0 -ml-2.5 sm:-ml-3";
+    if (myHand.length <= 8) return "first:ml-0 -ml-4 sm:-ml-5";
+    if (myHand.length <= 11) return "first:ml-0 -ml-5 sm:-ml-6";
     return "first:ml-0 -ml-6 sm:-ml-7";
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col justify-between overflow-hidden bg-[#38166D] select-none text-slate-100 font-['Outfit',sans-serif]">
+    <div className="relative w-full h-[100dvh] max-h-screen flex flex-col justify-between overflow-hidden bg-[#38166D] select-none text-slate-100 font-['Outfit',sans-serif]">
       {/* Geometric Scatter Pattern Background (Matching Reference Image 1) */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -153,8 +156,8 @@ export const UnoTable: React.FC<UnoTableProps> = ({
         </svg>
       </div>
 
-      {/* 1. TOP HEADER BAR: Direction, Turn Status, Exit Match */}
-      <div className="relative z-20 flex items-center justify-between px-3 py-1.5 bg-[#250B4B]/80 backdrop-blur-md border-b border-purple-500/30 shadow-md">
+      {/* 1. TOP HEADER BAR: Direction, Turn Timer Countdown & Exit */}
+      <div className="relative z-20 flex items-center justify-between px-3 py-2 bg-[#250B4B]/90 backdrop-blur-md border-b border-purple-500/30 shadow-md">
         <div className="flex items-center space-x-2">
           {/* Turn Direction Badge */}
           <div className="flex items-center text-xs font-bold text-purple-200">
@@ -171,13 +174,13 @@ export const UnoTable: React.FC<UnoTableProps> = ({
 
           {/* Draw stack penalty if active */}
           {gameState.drawStackCount > 0 && (
-            <span className="text-xs font-black text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse">
+            <span className="text-xs font-black text-amber-300 bg-amber-950/90 px-2 py-0.5 rounded-full border border-amber-500 animate-pulse">
               +{gameState.drawStackCount} Penalty!
             </span>
           )}
         </div>
 
-        {/* Turn Status Banner & Controls */}
+        {/* Turn Status Banner & Active Countdown Timer */}
         <div className="flex items-center space-x-2">
           {/* Catch UNO Alert Button */}
           {gameState.unoCatchWindow && gameState.unoCatchWindow.vulnerableSeat !== currentSeat && (
@@ -192,14 +195,18 @@ export const UnoTable: React.FC<UnoTableProps> = ({
             </button>
           )}
 
+          {/* Turn Countdown Display */}
           <div
-            className={`text-xs font-extrabold px-3 py-1 rounded-full border shadow transition-all ${
-              isMyTurn
+            className={`text-xs font-black px-3.5 py-1 rounded-full border shadow flex items-center space-x-1.5 transition-all ${
+              turnSecondsLeft <= 5
+                ? "bg-rose-600 text-white border-white animate-pulse ring-2 ring-rose-400"
+                : isMyTurn
                 ? "bg-emerald-500 text-slate-950 border-white ring-2 ring-emerald-300 animate-pulse"
                 : "bg-purple-950/80 border-purple-400/40 text-purple-200"
             }`}
           >
-            {isMyTurn ? "🟢 YOUR TURN!" : `⏳ ${activePlayerName}'s Turn`}
+            <span className="font-mono text-sm font-black">{turnSecondsLeft}s</span>
+            <span>{isMyTurn ? "• YOUR TURN!" : `• ${activePlayerName}`}</span>
           </div>
 
           {/* Exit Match Button */}
@@ -212,9 +219,9 @@ export const UnoTable: React.FC<UnoTableProps> = ({
         </div>
       </div>
 
-      {/* 2. TOP OPPONENT */}
+      {/* 2. TOP OPPONENT (Centered at Top) */}
       {topOpponent && (
-        <div className="relative z-10 flex flex-col items-center pt-1">
+        <div className="relative z-10 flex flex-col items-center pt-2">
           {/* Speech Bubble */}
           {speechBubbles[topOpponent.seat] && (
             <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-white text-slate-950 font-black text-xs px-3 py-1 rounded-2xl shadow-2xl border border-slate-300 whitespace-nowrap animate-bounce z-30 pointer-events-none">
@@ -224,11 +231,11 @@ export const UnoTable: React.FC<UnoTableProps> = ({
           )}
 
           {/* Mini Card Fan */}
-          <div className="flex -space-x-2.5 mb-1">
+          <div className="flex -space-x-2.5 mb-1.5">
             {Array.from({ length: Math.min(gameState.playerHands[topOpponent.seat]?.length || 0, 7) }).map((_, i) => (
               <div
                 key={i}
-                className="w-5 h-7 rounded bg-[#0F1422] border border-white shadow flex items-center justify-center overflow-hidden"
+                className="w-5 h-7 rounded bg-[#0F1422] border border-white/90 shadow flex items-center justify-center overflow-hidden"
               >
                 <div className="w-3.5 h-5 rounded-full bg-red-600 -rotate-20" />
               </div>
@@ -236,7 +243,7 @@ export const UnoTable: React.FC<UnoTableProps> = ({
           </div>
 
           {/* Avatar with Turn Glow Ring */}
-          <div className="flex items-center space-x-1.5">
+          <div className="flex items-center space-x-2">
             <div className="relative">
               <img
                 src={getPlayerAvatar(topOpponent.avatar, topOpponent.name, topOpponent.seat.toString())}
@@ -251,15 +258,15 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                 {gameState.playerHands[topOpponent.seat]?.length || 0}
               </span>
             </div>
-            <span className="text-xs font-black text-white drop-shadow max-w-[85px] truncate">
+            <span className="text-xs font-black text-white drop-shadow max-w-[90px] truncate">
               {topOpponent.name}
             </span>
           </div>
         </div>
       )}
 
-      {/* 3. MIDDLE ZONE: Left Opponent, Circular Play Area, Right Opponent */}
-      <div className="relative z-10 flex-1 flex items-center justify-between px-2 sm:px-6 my-1">
+      {/* 3. MIDDLE PLAY ZONE: Left Opponent, Center Circular Ring, Right Opponent */}
+      <div className="relative z-10 flex-1 flex items-center justify-between px-3 sm:px-6 my-auto">
         {/* LEFT OPPONENT */}
         <div className="w-20 flex flex-col items-center">
           {leftOpponent ? (
@@ -273,11 +280,11 @@ export const UnoTable: React.FC<UnoTableProps> = ({
               )}
 
               {/* Vertical Card Stack */}
-              <div className="flex flex-col -space-y-3.5 mb-1">
+              <div className="flex flex-col -space-y-3.5 mb-1.5">
                 {Array.from({ length: Math.min(gameState.playerHands[leftOpponent.seat]?.length || 0, 5) }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-7 h-4.5 rounded bg-[#0F1422] border border-white shadow flex items-center justify-center"
+                    className="w-7 h-4.5 rounded bg-[#0F1422] border border-white/90 shadow flex items-center justify-center"
                   >
                     <div className="w-5 h-3 rounded-full bg-red-600 rotate-12" />
                   </div>
@@ -303,14 +310,14 @@ export const UnoTable: React.FC<UnoTableProps> = ({
               </span>
             </div>
           ) : (
-            <div className="w-8" />
+            <div className="w-10" />
           )}
         </div>
 
         {/* CENTER CIRCULAR PLAY ZONE (Yellow Ring Matching Reference Image 1) */}
         <div className="relative flex items-center justify-center">
           {/* Yellow Circular Play Ring */}
-          <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full border-4 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.3)] flex items-center justify-center bg-purple-950/40">
+          <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-full border-4 border-amber-400 shadow-[0_0_35px_rgba(251,191,36,0.35)] flex items-center justify-center bg-purple-950/40">
             {/* Ambient Active Color Glow */}
             <div
               className={`absolute inset-4 rounded-full blur-2xl opacity-40 transition-colors duration-500 ${
@@ -376,11 +383,11 @@ export const UnoTable: React.FC<UnoTableProps> = ({
               )}
 
               {/* Vertical Card Stack */}
-              <div className="flex flex-col -space-y-3.5 mb-1">
+              <div className="flex flex-col -space-y-3.5 mb-1.5">
                 {Array.from({ length: Math.min(gameState.playerHands[rightOpponent.seat]?.length || 0, 5) }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-7 h-4.5 rounded bg-[#0F1422] border border-white shadow flex items-center justify-center"
+                    className="w-7 h-4.5 rounded bg-[#0F1422] border border-white/90 shadow flex items-center justify-center"
                   >
                     <div className="w-5 h-3 rounded-full bg-red-600 -rotate-12" />
                   </div>
@@ -406,15 +413,15 @@ export const UnoTable: React.FC<UnoTableProps> = ({
               </span>
             </div>
           ) : (
-            <div className="w-8" />
+            <div className="w-10" />
           )}
         </div>
       </div>
 
       {/* 4. CURRENT USER BOTTOM HAND & CURVED BLUE TRAY (Matching Reference Image 1) */}
-      <div className="relative z-20 w-full pt-3 pb-2 px-3 bg-[#008AE6] rounded-t-[32px] border-t-4 border-[#006BB3] shadow-2xl flex flex-col">
+      <div className="relative z-20 w-full pt-3 pb-3 px-3 bg-gradient-to-b from-[#008AE6] to-[#006BB3] rounded-t-[32px] border-t-4 border-[#38B6FF] shadow-2xl flex flex-col">
         {/* User Avatar & Info Row (Left aligned like in Reference Image 1) */}
-        <div className="flex items-center justify-between px-2 mb-2">
+        <div className="flex items-center justify-between px-2 mb-1.5">
           <div className="relative flex items-center space-x-2">
             {/* Speech Bubble */}
             {speechBubbles[currentSeat] && (
@@ -457,11 +464,14 @@ export const UnoTable: React.FC<UnoTableProps> = ({
           )}
         </div>
 
-        {/* Fanned Cards Strip (High contrast, 100% opaque, neatly spaced) */}
+        {/* Fanned Cards Strip (High contrast, 100% opaque, generous spacing) */}
         <div className="w-full overflow-x-auto py-2 px-1 scrollbar-none flex justify-center">
-          <div className="flex items-end min-h-[115px] sm:min-h-[125px] pb-1 px-3">
+          <div className="flex items-end min-h-[125px] sm:min-h-[135px] pb-1 px-4">
             {myHand.map((card, idx) => {
               const playable = isMyTurn && canPlayCard(card, gameState, currentSeat);
+              const total = myHand.length;
+              const mid = (total - 1) / 2;
+              const rot = total > 1 ? (idx - mid) * (total > 7 ? 2 : 3) : 0;
 
               return (
                 <div
@@ -469,11 +479,12 @@ export const UnoTable: React.FC<UnoTableProps> = ({
                   onClick={() => handleCardClick(card)}
                   style={{
                     zIndex: idx + 1,
+                    transform: `rotate(${rot}deg) translateY(${playable ? "-20px" : "0px"})`,
                   }}
-                  className={`transition-all duration-200 transform ${getCardMarginClass()} ${
+                  className={`transition-all duration-200 ${getCardMargin()} ${
                     playable
-                      ? "-translate-y-4 sm:-translate-y-6 hover:-translate-y-8 hover:scale-110 cursor-pointer drop-shadow-2xl"
-                      : "translate-y-0 opacity-100 brightness-85 cursor-not-allowed hover:brightness-100"
+                      ? "hover:-translate-y-7 hover:scale-110 cursor-pointer drop-shadow-2xl"
+                      : "opacity-100 brightness-90 cursor-not-allowed hover:brightness-100"
                   }`}
                 >
                   <UnoCardView
