@@ -1,3 +1,4 @@
+/// <reference path="../deno.d.ts" />
 // ==============================================================================
 // AUTH-VERIFY EDGE FUNCTION
 // File: supabase/functions/auth-verify/index.ts

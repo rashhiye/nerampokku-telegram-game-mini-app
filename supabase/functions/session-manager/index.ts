@@ -1,3 +1,4 @@
+/// <reference path="../deno.d.ts" />
 // ==============================================================================
 // SESSION-MANAGER EDGE FUNCTION
 // File: supabase/functions/session-manager/index.ts

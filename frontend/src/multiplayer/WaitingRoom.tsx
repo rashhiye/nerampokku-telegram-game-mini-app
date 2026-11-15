@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { GameSessionInfo, SessionPlayerInfo } from "./types";
-import { Crown, User, Share2, LogOut, Play, Copy, Check } from "lucide-react";
+import { Crown, User, Share2, LogOut, Play, Copy, Check, UserPlus } from "lucide-react";
 import { haptics } from "../telegram/haptics";
 
 interface WaitingRoomProps {
@@ -15,6 +15,7 @@ interface WaitingRoomProps {
   isHost: boolean;
   onStartMatch: () => void;
   onLeaveRoom: () => void;
+  onAddBot?: () => void;
 }
 
 export const WaitingRoom: React.FC<WaitingRoomProps> = ({
@@ -24,6 +25,7 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
   isHost,
   onStartMatch,
   onLeaveRoom,
+  onAddBot,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -146,6 +148,18 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Optional: Host can add a bot player for testing */}
+      {isHost && players.length < session.maxPlayers && onAddBot && (
+        <button
+          type="button"
+          onClick={onAddBot}
+          className="w-full py-2.5 rounded-2xl bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-700/40 text-indigo-300 font-bold text-xs flex items-center justify-center space-x-1.5 active:scale-95 transition-all"
+        >
+          <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
+          <span>+ Add Bot Player (Optional Solo Test)</span>
+        </button>
+      )}
 
       {/* Start / Leave Action Buttons */}
       <div className="space-y-2 pt-2">

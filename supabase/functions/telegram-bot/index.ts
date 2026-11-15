@@ -1,3 +1,4 @@
+/// <reference path="../deno.d.ts" />
 // ==============================================================================
 // TELEGRAM-BOT EDGE FUNCTION (WEBHOOK)
 // File: supabase/functions/telegram-bot/index.ts

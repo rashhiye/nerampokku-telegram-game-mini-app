@@ -41,61 +41,8 @@ export const App: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [floatingReactions, setFloatingReactions] = useState<QuickReactionEvent[]>([]);
 
-  // Demo Sessions in Lobby
-  const [sessions, setSessions] = useState<GameSessionInfo[]>([
-    {
-      id: "demo-uno-1",
-      groupId: "-1001234567890",
-      groupTitle: "നേരംപോക്ക് Official Club",
-      gameType: "uno",
-      status: "waiting",
-      hostId: "user-1",
-      hostName: "Alex Vance",
-      minPlayers: 3,
-      maxPlayers: 4,
-      currentPlayerCount: 2,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: "demo-ludo-1",
-      groupId: "-1001234567890",
-      groupTitle: "നേരംപോക്ക് Official Club",
-      gameType: "ludo",
-      status: "waiting",
-      hostId: "user-2",
-      hostName: "Sarah Connor",
-      minPlayers: 4,
-      maxPlayers: 4,
-      currentPlayerCount: 3,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: "demo-ludo-5p",
-      groupId: "-1001234567890",
-      groupTitle: "നേരംപോക്ക് Official Club",
-      gameType: "ludo",
-      status: "waiting",
-      hostId: "user-4",
-      hostName: "Elena Rostova",
-      minPlayers: 4,
-      maxPlayers: 5,
-      currentPlayerCount: 3,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: "demo-ludo-6p",
-      groupId: "-1001234567890",
-      groupTitle: "നേരംപോക്ക് Official Club",
-      gameType: "ludo",
-      status: "waiting",
-      hostId: "user-3",
-      hostName: "Thomas Anderson",
-      minPlayers: 4,
-      maxPlayers: 6,
-      currentPlayerCount: 4,
-      createdAt: new Date().toISOString(),
-    },
-  ]);
+  // Active Sessions in Lobby (Start clean without fake demo rooms)
+  const [sessions, setSessions] = useState<GameSessionInfo[]>([]);
 
   // Demo Leaderboards
   const unoLeaderboard: LeaderboardEntry[] = [
@@ -123,87 +70,71 @@ export const App: React.FC = () => {
     haptics.selection();
   };
 
-  // Join match handler
+  // Join match handler (Clean: only seats actual players, no fake bots filling the room)
   const handleJoinSession = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (!session) return;
 
     setCurrentSession(session);
-    setMySeatIndex(0);
 
-    // Populate waiting room with players
-    const mockPlayers: SessionPlayerInfo[] = [
-      {
-        id: "mp_0",
-        profileId: context.user.id.toString(),
-        name: context.user.first_name,
-        username: context.user.username,
-        avatar: context.user.photo_url,
-        seatIndex: 0,
-        isHost: true,
-        status: "waiting",
-      },
-      {
-        id: "mp_1",
-        profileId: "100000002",
-        name: "Sarah Connor",
-        username: "sarah_p",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&h=60",
-        seatIndex: 1,
-        isHost: false,
-        status: "waiting",
-      },
-      {
-        id: "mp_2",
-        profileId: "100000003",
-        name: "Thomas Anderson",
-        username: "neo_matrix",
-        avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=60&h=60",
-        seatIndex: 2,
-        isHost: false,
-        status: "waiting",
-      },
-    ];
-
-    if (session.maxPlayers >= 4) {
-      mockPlayers.push({
-        id: "mp_3",
-        profileId: "100000004",
-        name: "Elena Rostova",
-        username: "elena_r",
-        avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=60&h=60",
-        seatIndex: 3,
-        isHost: false,
-        status: "waiting",
-      });
+    // If I am already seated, keep my seat
+    const existing = roomPlayers.find((p) => p.profileId === context.user.id.toString());
+    if (existing) {
+      setMySeatIndex(existing.seatIndex);
+    } else if (roomPlayers.length === 0) {
+      // First player in room is host
+      setMySeatIndex(0);
+      setRoomPlayers([
+        {
+          id: `mp_${context.user.id}`,
+          profileId: context.user.id.toString(),
+          name: context.user.first_name,
+          username: context.user.username,
+          avatar: context.user.photo_url,
+          seatIndex: 0,
+          isHost: true,
+          status: "waiting",
+        },
+      ]);
+    } else if (roomPlayers.length < session.maxPlayers) {
+      // Joining as next player
+      const nextSeat = roomPlayers.length;
+      setMySeatIndex(nextSeat);
+      setRoomPlayers((prev) => [
+        ...prev,
+        {
+          id: `p_${context.user.id}_${Date.now()}`,
+          profileId: context.user.id.toString(),
+          name: context.user.first_name,
+          username: context.user.username,
+          avatar: context.user.photo_url,
+          seatIndex: nextSeat,
+          isHost: false,
+          status: "waiting",
+        },
+      ]);
     }
 
-    if (session.maxPlayers >= 5) {
-      mockPlayers.push({
-        id: "mp_4",
-        profileId: "100000005",
-        name: "Marcus Vance",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60",
-        seatIndex: 4,
-        isHost: false,
-        status: "waiting",
-      });
-    }
-
-    if (session.maxPlayers === 6) {
-      mockPlayers.push({
-        id: "mp_5",
-        profileId: "100000006",
-        name: "Chloe King",
-        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=60&h=60",
-        seatIndex: 5,
-        isHost: false,
-        status: "waiting",
-      });
-    }
-
-    setRoomPlayers(mockPlayers);
     setScreen("waiting");
+  };
+
+  // Host can optionally add a bot player if playing solo or testing
+  const handleAddBot = () => {
+    if (!currentSession || roomPlayers.length >= currentSession.maxPlayers) return;
+    const botIdx = roomPlayers.length;
+    const botNames = ["Bot ചന്തു", "Bot അപ്പു", "Bot മാളു", "Bot രാജു", "Bot ദാസൻ"];
+    const newBot: SessionPlayerInfo = {
+      id: `bot_${botIdx}_${Date.now()}`,
+      profileId: `bot_${botIdx}`,
+      name: botNames[botIdx - 1] || `Bot ${botIdx}`,
+      username: `bot_${botIdx}`,
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=bot_${botIdx}`,
+      seatIndex: botIdx,
+      isHost: false,
+      status: "waiting",
+    };
+    setRoomPlayers((prev) => [...prev, newBot]);
+    haptics.impact("light");
   };
 
   // Create match handler
@@ -215,7 +146,7 @@ export const App: React.FC = () => {
     const newSession: GameSessionInfo = {
       id: `session_${Date.now()}`,
       groupId: context.startParam || "-1001234567890",
-      groupTitle: "Telegram Group",
+      groupTitle: context.isTelegram ? "Telegram Group" : "നേരംപോക്ക് Official Club",
       gameType,
       status: "waiting",
       hostId: context.user.id.toString(),
@@ -226,8 +157,23 @@ export const App: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
 
-    setSessions([newSession, ...sessions]);
-    handleJoinSession(newSession.id);
+    setSessions((prev) => [newSession, ...prev]);
+    setCurrentSession(newSession);
+    setMySeatIndex(0);
+    // When creating a session, ONLY the current host is seated!
+    setRoomPlayers([
+      {
+        id: `mp_${context.user.id}`,
+        profileId: context.user.id.toString(),
+        name: context.user.first_name,
+        username: context.user.username,
+        avatar: context.user.photo_url,
+        seatIndex: 0,
+        isHost: true,
+        status: "waiting",
+      },
+    ]);
+    setScreen("waiting");
   };
 
   // Start match handler
@@ -408,6 +354,7 @@ export const App: React.FC = () => {
             isHost={mySeatIndex === 0}
             onStartMatch={handleStartMatch}
             onLeaveRoom={() => setScreen("lobby")}
+            onAddBot={handleAddBot}
           />
         )}
 

@@ -1,3 +1,4 @@
+/// <reference path="../deno.d.ts" />
 // ==============================================================================
 // GAME-ACTION AUTHORITATIVE EDGE FUNCTION
 // File: supabase/functions/game-action/index.ts
