@@ -9,6 +9,7 @@ export interface ChatMessage {
   senderId: string;
   senderName: string;
   senderAvatar?: string;
+  seatIndex?: number;
   content: string;
   createdAt: string;
   reactions?: Record<string, number>; // emoji -> count

@@ -1,5 +1,5 @@
 // ==============================================================================
-// 6-PLAYER DEDICATED HEXAGONAL LUDO SVG BOARD
+// 6-PLAYER AUTHENTIC CIRCULAR LUDO SVG BOARD (MATCHING REFERENCE IMAGE 2)
 // File: frontend/src/games/ludo/components/Board6P.tsx
 // ==============================================================================
 
@@ -14,21 +14,21 @@ interface Board6PProps {
   onTokenClick: (tokenId: string) => void;
 }
 
-// 6 Colors
-const COLOR_HEX: Record<number, { main: string; bg: string; stroke: string; label: string }> = {
-  0: { main: "#EF4444", bg: "#991B1B", stroke: "#FEE2E2", label: "Red" },
-  1: { main: "#10B981", bg: "#065F46", stroke: "#D1FAE5", label: "Green" },
-  2: { main: "#F59E0B", bg: "#92400E", stroke: "#FEF3C7", label: "Yellow" },
-  3: { main: "#3B82F6", bg: "#1E40AF", stroke: "#DBEAFE", label: "Blue" },
-  4: { main: "#F97316", bg: "#9A3412", stroke: "#FFEDD5", label: "Orange" },
-  5: { main: "#A855F7", bg: "#6B21A8", stroke: "#F3E8FF", label: "Purple" },
+// 6 Authentic Colors matching reference: Red, Green, Yellow, Blue, Orange, Purple
+const COLOR_HEX: Record<number, { main: string; light: string; border: string; name: string }> = {
+  0: { main: "#DC2626", light: "#FCA5A5", border: "#991B1B", name: "Red" },      // Red
+  1: { main: "#16A34A", light: "#86EFAC", border: "#166534", name: "Green" },    // Green
+  2: { main: "#EAB308", light: "#FDE047", border: "#A16207", name: "Yellow" },   // Yellow
+  3: { main: "#2563EB", light: "#93C5FD", border: "#1E40AF", name: "Blue" },     // Blue
+  4: { main: "#EA580C", light: "#FDBA74", border: "#9A3412", name: "Orange" },   // Orange
+  5: { main: "#9333EA", light: "#D8B4FE", border: "#6B21A8", name: "Purple" },   // Purple
 };
 
 export const Board6P: React.FC<Board6PProps> = ({ gameState, onTokenClick }) => {
   const center = 300;
-  const radius = 270;
+  const radius = 280;
 
-  // Compute (x, y) from polar coordinates (angle in degrees, distance r)
+  // Polar to Cartesian
   const polar = (angleDeg: number, r: number) => {
     const rad = ((angleDeg - 90) * Math.PI) / 180;
     return {
@@ -38,7 +38,6 @@ export const Board6P: React.FC<Board6PProps> = ({ gameState, onTokenClick }) => 
   };
 
   // Generate 72 Perimeter Track Points
-  // 6 arms: Each sector spans 60 degrees. 12 steps per sector = 5 degrees per step.
   const trackCoords: { x: number; y: number; isStar: boolean; isStart: boolean; sector: number }[] = [];
   for (let i = 0; i < 72; i++) {
     const angle = i * 5; // 72 * 5 = 360 deg
@@ -46,51 +45,45 @@ export const Board6P: React.FC<Board6PProps> = ({ gameState, onTokenClick }) => 
     const stepInSector = i % 12;
     const isStart = stepInSector === 0;
     const isStar = stepInSector === 7;
-    // Radial distance fluctuates along hexagonal perimeter
-    const r = radius * 0.92;
+    const r = radius * 0.90;
     const pt = polar(angle, r);
     trackCoords.push({ ...pt, isStar, isStart, sector });
   }
 
-  // Base slot positions for each of the 6 seats
-  // Placed radially at r = 185, centered around each sector's main angle
+  // Base slot positions for tokens
   const getBaseSlotPosition = (seat: number, tokenIdx: number) => {
     const baseAngle = seat * 60;
-    const r = 190;
+    const r = 205;
     const offsets = [
-      { da: -5, dr: -15 },
-      { da: 5, dr: -15 },
-      { da: -5, dr: 15 },
-      { da: 5, dr: 15 },
+      { da: -4, dr: -14 },
+      { da: 4, dr: -14 },
+      { da: -4, dr: 14 },
+      { da: 4, dr: 14 },
     ];
     const off = offsets[tokenIdx];
     return polar(baseAngle + off.da, r + off.dr);
   };
 
-  // Home runway positions for each of the 6 seats (5 steps leading radially inwards)
+  // Home runway positions for 5 steps leading into center
   const getHomeRunwayPosition = (seat: number, stepIndex: number) => {
     const angle = seat * 60;
-    // Step index 0 to 4: moves from r = 160 down to r = 60
     const r = 165 - stepIndex * 24;
     return polar(angle, r);
   };
 
-  // Map any token to its rendered pixel position
+  // Map token to coordinates
   const getTokenPosition = (token: LudoToken): { x: number; y: number } => {
     if (token.step === -1) {
       return getBaseSlotPosition(token.seat, token.tokenIndex);
     }
     if (token.step === gameState.config.finishStep) {
-      // Reached center victory star
       const angle = token.seat * 60;
-      return polar(angle, 30);
+      return polar(angle, 35);
     }
     if (token.step >= 71) {
-      // In home runway (71 to 75)
       const stepIdx = token.step - 71;
       return getHomeRunwayPosition(token.seat, stepIdx);
     }
-    // On 72-square perimeter track
     const globalIdx = getGlobalTrackIndex(token.seat, token.step, gameState.config);
     if (globalIdx !== null && trackCoords[globalIdx]) {
       return { x: trackCoords[globalIdx].x, y: trackCoords[globalIdx].y };
@@ -106,57 +99,51 @@ export const Board6P: React.FC<Board6PProps> = ({ gameState, onTokenClick }) => 
     }
   };
 
+  // Collect all tokens across players
+  const allTokens: LudoToken[] = [];
+  Object.values(gameState.players).forEach((p) => {
+    if (p && p.tokens) {
+      allTokens.push(...p.tokens);
+    }
+  });
+
   return (
-    <div className="relative w-full max-w-[500px] aspect-square mx-auto p-1 select-none">
+    <div className="relative w-full max-w-[480px] aspect-square mx-auto p-1 select-none">
       <svg
         viewBox="0 0 600 600"
-        className="w-full h-full rounded-3xl shadow-2xl bg-[#0D111A] border-4 border-slate-800"
+        className="w-full h-full rounded-full shadow-2xl bg-[#FFFFFF] border-4 border-slate-900 drop-shadow-2xl"
       >
         <defs>
-          <filter id="hex-shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.6" />
+          <filter id="pawn-3d-shadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#000" floodOpacity="0.45" />
           </filter>
         </defs>
 
-        {/* 1. Hexagonal Board Perimeter Outer Background */}
-        <polygon
-          points="300,30 534,165 534,435 300,570 66,435 66,165"
-          fill="#131926"
-          stroke="#1F293D"
-          strokeWidth="6"
-        />
+        {/* 1. Authentic Circular Board Surface */}
+        <circle cx={center} cy={center} r={radius + 8} fill="#F8FAFC" stroke="#0F172A" strokeWidth="6" />
 
-        {/* 2. Six Colored Bases / Yards */}
+        {/* 2. Six Radial Colored Runway Arms (Middle Column) */}
         {[0, 1, 2, 3, 4, 5].map((seat) => {
-          const angle = seat * 60;
-          const pos = polar(angle, 190);
           const style = COLOR_HEX[seat];
+          const angle = seat * 60;
 
           return (
-            <g key={`base_${seat}`}>
-              {/* Base Outer Circular Pad */}
-              <circle
-                cx={pos.x}
-                cy={pos.y}
-                r="46"
-                fill={style.bg}
-                stroke={style.main}
-                strokeWidth="3"
-                className="opacity-90"
-              />
-              <circle cx={pos.x} cy={pos.y} r="38" fill="#161B26" />
-              {/* 4 Token Recesses */}
-              {[0, 1, 2, 3].map((tIdx) => {
-                const slot = getBaseSlotPosition(seat, tIdx);
+            <g key={`arm_${seat}`}>
+              {/* Home runway squares */}
+              {[0, 1, 2, 3, 4].map((stepIdx) => {
+                const pos = getHomeRunwayPosition(seat, stepIdx);
                 return (
-                  <circle
-                    key={`slot_${seat}_${tIdx}`}
-                    cx={slot.x}
-                    cy={slot.y}
-                    r="10"
-                    fill="#0B0E14"
-                    stroke="#334155"
+                  <rect
+                    key={`run_${seat}_${stepIdx}`}
+                    x={pos.x - 12}
+                    y={pos.y - 12}
+                    width="24"
+                    height="24"
+                    rx="3"
+                    fill={style.main}
+                    stroke="#0F172A"
                     strokeWidth="1.5"
+                    transform={`rotate(${angle} ${pos.x} ${pos.y})`}
                   />
                 );
               })}
@@ -164,51 +151,29 @@ export const Board6P: React.FC<Board6PProps> = ({ gameState, onTokenClick }) => 
           );
         })}
 
-        {/* 3. Six Home Runways Leading to Center */}
-        {[0, 1, 2, 3, 4, 5].map((seat) => {
-          const style = COLOR_HEX[seat];
-          return [0, 1, 2, 3, 4].map((stepIdx) => {
-            const pos = getHomeRunwayPosition(seat, stepIdx);
-            return (
-              <circle
-                key={`runway_${seat}_${stepIdx}`}
-                cx={pos.x}
-                cy={pos.y}
-                r="11"
-                fill={style.main}
-                stroke="#0B0E14"
-                strokeWidth="1.5"
-                opacity="0.9"
-              />
-            );
-          });
-        })}
-
-        {/* 4. The 72 Perimeter Track Nodes */}
+        {/* 3. The 72 Outer Track Cells */}
         {trackCoords.map((pt, idx) => {
           const style = COLOR_HEX[pt.sector];
-          let fill = "#1E2738";
-          let stroke = "#334155";
-          let radiusNode = 10;
+          let fill = "#FFFFFF";
+          let stroke = "#0F172A";
 
           if (pt.isStart) {
             fill = style.main;
-            stroke = "#FFFFFF";
-            radiusNode = 12;
           } else if (pt.isStar) {
-            fill = "#D97706";
-            stroke = "#FDE68A";
+            fill = "#FEF08A"; // Pale yellow star background
           }
 
           return (
             <g key={`track_${idx}`}>
-              <circle
-                cx={pt.x}
-                cy={pt.y}
-                r={radiusNode}
+              <rect
+                x={pt.x - 10}
+                y={pt.y - 10}
+                width="20"
+                height="20"
+                rx="3"
                 fill={fill}
                 stroke={stroke}
-                strokeWidth="1.5"
+                strokeWidth="1.2"
               />
               {pt.isStar && (
                 <text
@@ -216,7 +181,7 @@ export const Board6P: React.FC<Board6PProps> = ({ gameState, onTokenClick }) => 
                   y={pt.y + 4}
                   fontSize="12"
                   textAnchor="middle"
-                  fill="#FFF"
+                  fill="#D97706"
                   fontWeight="bold"
                 >
                   ★
@@ -226,68 +191,141 @@ export const Board6P: React.FC<Board6PProps> = ({ gameState, onTokenClick }) => 
           );
         })}
 
-        {/* 5. Center Victory Hexagon & Star */}
-        <polygon
-          points="300,255 339,277 339,322 300,345 261,322 261,277"
-          fill="#1E293B"
-          stroke="#F59E0B"
-          strokeWidth="3"
-        />
-        <text
-          x={center}
-          y={center + 8}
-          fontSize="24"
-          textAnchor="middle"
-          fill="#F59E0B"
-          fontWeight="black"
-        >
-          ★
-        </text>
-
-        {/* 6. Render All Tokens for all 6 seats */}
+        {/* 4. Six Large Circular Home Bases (Matching Reference Image 2) */}
         {[0, 1, 2, 3, 4, 5].map((seat) => {
-          const player = gameState.players[seat];
-          if (!player) return null;
+          const angle = seat * 60;
+          const pos = polar(angle, 205);
           const style = COLOR_HEX[seat];
 
-          return player.tokens.map((token) => {
-            const pos = getTokenPosition(token);
-            const isMovable = gameState.movableTokenIds.includes(token.id);
-
-            return (
-              <g
-                key={token.id}
-                onClick={() => handleTokenSelect(token.id)}
-                className={isMovable ? "cursor-pointer" : ""}
-                filter="url(#hex-shadow)"
-              >
-                {/* Ping ring for legal movable tokens */}
-                {isMovable && (
+          return (
+            <g key={`base_${seat}`}>
+              {/* Base Outer Circle */}
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r="46"
+                fill={style.main}
+                stroke="#0F172A"
+                strokeWidth="3.5"
+                className="drop-shadow"
+              />
+              {/* Base Inner White Area */}
+              <circle cx={pos.x} cy={pos.y} r="38" fill="#FFFFFF" stroke="#0F172A" strokeWidth="2" />
+              {/* 4 Token Recesses */}
+              {[0, 1, 2, 3].map((tIdx) => {
+                const slot = getBaseSlotPosition(seat, tIdx);
+                return (
                   <circle
-                    cx={pos.x}
-                    cy={pos.y}
-                    r="17"
-                    fill="none"
-                    stroke="#FFFFFF"
-                    strokeWidth="3"
-                    className="animate-ping opacity-75"
+                    key={`slot_${seat}_${tIdx}`}
+                    cx={slot.x}
+                    cy={slot.y}
+                    r="10"
+                    fill={style.light}
+                    stroke="#0F172A"
+                    strokeWidth="1.5"
                   />
-                )}
-                {/* Token Outer Body */}
+                );
+              })}
+            </g>
+          );
+        })}
+
+        {/* 5. Center Triangular HOME Finish Zones */}
+        {[0, 1, 2, 3, 4, 5].map((seat) => {
+          const style = COLOR_HEX[seat];
+          const a1 = ((seat * 60 - 30 - 90) * Math.PI) / 180;
+          const a2 = ((seat * 60 + 30 - 90) * Math.PI) / 180;
+          const rTri = 52;
+          const x1 = center + rTri * Math.cos(a1);
+          const y1 = center + rTri * Math.sin(a1);
+          const x2 = center + rTri * Math.cos(a2);
+          const y2 = center + rTri * Math.sin(a2);
+
+          const textAngle = seat * 60;
+          const textPos = polar(textAngle, 30);
+
+          return (
+            <g key={`tri_${seat}`}>
+              <polygon
+                points={`${center},${center} ${x1},${y1} ${x2},${y2}`}
+                fill={style.main}
+                stroke="#0F172A"
+                strokeWidth="1.5"
+              />
+              <text
+                x={textPos.x}
+                y={textPos.y + 3}
+                fontSize="7"
+                fontWeight="900"
+                textAnchor="middle"
+                fill="#FFFFFF"
+                transform={`rotate(${textAngle} ${textPos.x} ${textPos.y})`}
+              >
+                HOME
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Center Target Hub */}
+        <circle cx={center} cy={center} r="16" fill="#EF4444" stroke="#0F172A" strokeWidth="2.5" />
+        <circle cx={center} cy={center} r="6" fill="#FFFFFF" />
+
+        {/* 6. Pawns / Tokens (Rendered with 3D shadow and pulsing selection) */}
+        {allTokens.map((token) => {
+          const pos = getTokenPosition(token);
+          const style = COLOR_HEX[token.seat] || COLOR_HEX[0];
+          const isMovable = gameState.movableTokenIds.includes(token.id);
+
+          return (
+            <g
+              key={token.id}
+              onClick={() => handleTokenSelect(token.id)}
+              className={`transition-all duration-300 ${
+                isMovable ? "cursor-pointer" : "pointer-events-none"
+              }`}
+            >
+              {/* Pulsing ring if movable */}
+              {isMovable && (
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r="12"
-                  fill={style.main}
-                  stroke={isMovable ? "#FFFFFF" : style.stroke}
-                  strokeWidth={isMovable ? "3" : "1.8"}
-                  className="transition-all duration-300"
+                  r="19"
+                  fill="none"
+                  stroke="#FBBF24"
+                  strokeWidth="3.5"
+                  className="animate-ping opacity-75"
                 />
-                {/* Inner Highlight */}
-                <circle cx={pos.x} cy={pos.y} r="5" fill="#FFFFFF" fillOpacity="0.4" />
-              </g>
-            );
-          });
+              )}
+
+              {/* 3D Pawn Base */}
+              <ellipse
+                cx={pos.x}
+                cy={pos.y + 4}
+                rx="11"
+                ry="6"
+                fill="#0F172A"
+                opacity="0.3"
+              />
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r="12"
+                fill={style.main}
+                stroke="#0F172A"
+                strokeWidth="2"
+                filter="url(#pawn-3d-shadow)"
+              />
+              {/* 3D Pawn Top Head */}
+              <circle
+                cx={pos.x - 2}
+                cy={pos.y - 2}
+                r="5"
+                fill={style.light}
+                opacity="0.8"
+              />
+            </g>
+          );
         })}
       </svg>
     </div>

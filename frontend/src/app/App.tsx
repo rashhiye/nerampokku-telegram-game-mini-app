@@ -48,6 +48,29 @@ export const App: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [floatingReactions, setFloatingReactions] = useState<QuickReactionEvent[]>([]);
 
+  // Real-time In-Game Speech Bubbles (Seat index -> { text, expiresAt })
+  const [speechBubbles, setSpeechBubbles] = useState<Record<number, { text: string; expiresAt: number }>>({});
+
+  // Auto-expire speech bubbles after 4.5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setSpeechBubbles((prev) => {
+        let hasExpired = false;
+        const next = { ...prev };
+        for (const seatStr in next) {
+          if (next[Number(seatStr)]?.expiresAt <= now) {
+            delete next[Number(seatStr)];
+            hasExpired = true;
+          }
+        }
+        return hasExpired ? next : prev;
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Lobby Sessions
   const [sessions, setSessions] = useState<GameSessionInfo[]>([]);
 
@@ -385,9 +408,19 @@ export const App: React.FC = () => {
           filter: `id=eq.${currentSession.id}`,
         },
         (payload: any) => {
-          if (payload.new && payload.new.status === "in_progress") {
-            // Host started match -> transition everyone to game!
-            fetchGameState(currentSession.id);
+          if (payload.new) {
+            if (payload.new.status === "in_progress") {
+              // Host started match -> transition everyone to game!
+              fetchGameState(currentSession.id);
+            } else if (payload.new.status === "abandoned" || payload.new.status === "cancelled") {
+              // Room was disbanded or closed
+              setCurrentSession(null);
+              setUnoState(null);
+              setLudoState(null);
+              setRoomPlayers([]);
+              setScreen("lobby");
+              fetchSessions();
+            }
           }
         }
       )
@@ -412,6 +445,83 @@ export const App: React.FC = () => {
           }
         }
       )
+      // ZERO-LAG REALTIME BROADCAST GAME STATE (Sub-50ms peer turn sync)
+      .on("broadcast", { event: "game_state" }, (payload: any) => {
+        if (payload.payload && payload.payload.state) {
+          const next = payload.payload.state;
+          if (currentSession.gameType === "uno") {
+            setUnoState(next);
+            setScreen("game_uno");
+          } else {
+            setLudoState(next);
+            setScreen("game_ludo");
+          }
+        }
+      })
+      // IN-GAME SPEECH BUBBLE & INSTANT CHAT BROADCAST
+      .on("broadcast", { event: "chat_bubble" }, (payload: any) => {
+        if (payload.payload) {
+          const { seatIndex, text, message } = payload.payload;
+          if (typeof seatIndex === "number" && text) {
+            setSpeechBubbles((prev) => ({
+              ...prev,
+              [seatIndex]: { text, expiresAt: Date.now() + 4500 },
+            }));
+          }
+          if (message && message.senderId !== (profileId || context.user.id.toString())) {
+            setChatMessages((prev) => {
+              if (prev.some((m) => m.id === message.id)) return prev;
+              return [...prev, message];
+            });
+          }
+        }
+      })
+      // PLAYER LEFT EVENT (Notification & Auto-advance turn)
+      .on("broadcast", { event: "player_left" }, (payload: any) => {
+        const leftSeat = payload?.payload?.seatIndex;
+        haptics.notification("warning");
+        if (typeof leftSeat === "number") {
+          // Advance turn if it was departed player's turn
+          setUnoState((prev) => {
+            if (!prev) return null;
+            if (prev.currentTurnSeat === leftSeat) {
+              const nextTurn =
+                (prev.currentTurnSeat +
+                  (prev.direction === 1 ? 1 : prev.playerCount - 1)) %
+                prev.playerCount;
+              return { ...prev, currentTurnSeat: nextTurn };
+            }
+            return prev;
+          });
+
+          setLudoState((prev) => {
+            if (!prev) return null;
+            if (prev.currentTurnSeat === leftSeat) {
+              const nextTurn = (prev.currentTurnSeat + 1) % prev.playerCount;
+              return {
+                ...prev,
+                currentTurnSeat: nextTurn,
+                turnPhase: "ROLL",
+                currentRoll: null,
+                remainingMoves: [],
+              };
+            }
+            return prev;
+          });
+        }
+        fetchRoomPlayers(currentSession.id);
+      })
+      // ROOM CLOSED BY HOST EVENT
+      .on("broadcast", { event: "room_closed" }, (payload: any) => {
+        const hostName = payload?.payload?.hostName || "The host";
+        alert(`Room was closed by ${hostName}. Returning to Lobby.`);
+        setCurrentSession(null);
+        setUnoState(null);
+        setLudoState(null);
+        setRoomPlayers([]);
+        setScreen("lobby");
+        fetchSessions();
+      })
       .on("broadcast", { event: "room_update" }, () => {
         fetchRoomPlayers(currentSession.id);
       })
@@ -434,7 +544,10 @@ export const App: React.FC = () => {
               content: payload.new.content,
               createdAt: payload.new.created_at,
             };
-            setChatMessages((prev) => [...prev, msg]);
+            setChatMessages((prev) => {
+              if (prev.some((m) => m.id === msg.id)) return prev;
+              return [...prev, msg];
+            });
           }
         }
       )
@@ -632,23 +745,77 @@ export const App: React.FC = () => {
     }
   };
 
-  // Leave room
+  // Leave room or match
   const handleLeaveRoom = async () => {
-    if (currentSession && profileId) {
+    if (currentSession) {
+      const activeProf = profileId || context.user.id.toString();
       try {
+        if (roomChannelRef.current) {
+          try {
+            roomChannelRef.current.send({
+              type: "broadcast",
+              event: "player_left",
+              payload: { seatIndex: mySeatIndex, playerName: context.user.first_name },
+            });
+          } catch (e) {
+            // safe ignore
+          }
+        }
         await supabase
           .from("game_players")
           .delete()
           .eq("session_id", currentSession.id)
-          .eq("profile_id", profileId);
+          .eq("profile_id", activeProf);
         broadcastRoomUpdate();
       } catch (e) {
         console.warn("Leave room error:", e);
       }
     }
     setCurrentSession(null);
+    setUnoState(null);
+    setLudoState(null);
     setRoomPlayers([]);
     setScreen("lobby");
+    fetchSessions();
+  };
+
+  // Host Close & Disband Entire Room
+  const handleCloseRoom = async () => {
+    if (!currentSession) return;
+    try {
+      if (roomChannelRef.current) {
+        try {
+          roomChannelRef.current.send({
+            type: "broadcast",
+            event: "room_closed",
+            payload: { hostName: context.user.first_name },
+          });
+        } catch (e) {
+          // safe ignore
+        }
+      }
+
+      await supabase
+        .from("game_sessions")
+        .update({ status: "abandoned" })
+        .eq("id", currentSession.id);
+
+      await supabase
+        .from("game_players")
+        .delete()
+        .eq("session_id", currentSession.id);
+
+      broadcastRoomUpdate();
+    } catch (e) {
+      console.warn("handleCloseRoom error:", e);
+    }
+
+    setCurrentSession(null);
+    setUnoState(null);
+    setLudoState(null);
+    setRoomPlayers([]);
+    setScreen("lobby");
+    fetchSessions();
   };
 
   // Optional: Host can add a bot player for testing
@@ -746,6 +913,21 @@ export const App: React.FC = () => {
   // Synchronize game state updates on moves and record match conclusions
   const syncGameState = async (nextState: any) => {
     if (!currentSession) return;
+
+    // 1. FAST REALTIME BROADCAST (Zero-lag turn transitions across all devices)
+    if (roomChannelRef.current) {
+      try {
+        roomChannelRef.current.send({
+          type: "broadcast",
+          event: "game_state",
+          payload: { state: nextState, seat: mySeatIndex, timestamp: Date.now() },
+        });
+      } catch (err) {
+        console.warn("Broadcast game_state error:", err);
+      }
+    }
+
+    // 2. Authoritative background persistence to Supabase
     try {
       await supabase.from("game_states").upsert(
         {
@@ -899,6 +1081,43 @@ export const App: React.FC = () => {
     if (!currentSession) return;
     const activeProf = profileId || context.user.id.toString();
 
+    const newMsg: ChatMessage = {
+      id: `msg_${Date.now()}_${Math.random()}`,
+      sessionId: currentSession.id,
+      senderId: activeProf,
+      senderName: context.user.first_name,
+      senderAvatar: context.user.photo_url,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
+    // 1. Immediately display locally
+    setChatMessages((prev) => [...prev, newMsg]);
+
+    // 2. Set local speech bubble over player's seat
+    setSpeechBubbles((prev) => ({
+      ...prev,
+      [mySeatIndex]: { text: content, expiresAt: Date.now() + 4500 },
+    }));
+
+    // 3. Broadcast speech bubble to all participants immediately
+    if (roomChannelRef.current) {
+      try {
+        roomChannelRef.current.send({
+          type: "broadcast",
+          event: "chat_bubble",
+          payload: {
+            seatIndex: mySeatIndex,
+            text: content,
+            message: newMsg,
+          },
+        });
+      } catch (e) {
+        // safe ignore
+      }
+    }
+
+    // 4. Background persistence to chat_messages table
     try {
       await supabase.from("chat_messages").insert({
         session_id: currentSession.id,
@@ -908,17 +1127,7 @@ export const App: React.FC = () => {
         content,
       });
     } catch (e) {
-      // Fallback local
-      const newMsg: ChatMessage = {
-        id: `msg_${Date.now()}`,
-        sessionId: currentSession.id,
-        senderId: activeProf,
-        senderName: context.user.first_name,
-        senderAvatar: context.user.photo_url,
-        content,
-        createdAt: new Date().toISOString(),
-      };
-      setChatMessages((prev) => [...prev, newMsg]);
+      // safe ignore
     }
   };
 
@@ -1077,6 +1286,7 @@ export const App: React.FC = () => {
             isHost={mySeatIndex === 0}
             onStartMatch={handleStartMatch}
             onLeaveRoom={handleLeaveRoom}
+            onCloseRoom={handleCloseRoom}
             onAddBot={handleAddBot}
           />
         )}
@@ -1091,12 +1301,16 @@ export const App: React.FC = () => {
               avatar: p.avatar,
               isCurrentUser: p.seatIndex === mySeatIndex,
             }))}
+            speechBubbles={speechBubbles}
+            isHost={mySeatIndex === 0}
             onPlayCard={handleUnoPlayCard}
             onDrawCard={handleUnoDrawCard}
             onCallUno={handleUnoCallUno}
             onCatchUno={handleUnoCatchUno}
             onDecideChallenge={handleUnoDecideChallenge}
             onRematch={handleStartMatch}
+            onLeaveMatch={handleLeaveRoom}
+            onCloseMatch={handleCloseRoom}
           />
         )}
 
@@ -1110,10 +1324,14 @@ export const App: React.FC = () => {
               avatar: p.avatar,
               isCurrentUser: p.seatIndex === mySeatIndex,
             }))}
+            speechBubbles={speechBubbles}
+            isHost={mySeatIndex === 0}
             onRollDice={handleLudoRollDice}
             onMoveToken={handleLudoMoveToken}
             onPassTurn={() => {}}
             onRematch={handleStartMatch}
+            onLeaveMatch={handleLeaveRoom}
+            onCloseMatch={handleCloseRoom}
           />
         )}
 

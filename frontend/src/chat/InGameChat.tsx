@@ -1,14 +1,13 @@
 // ==============================================================================
-// IN-GAME REAL-TIME CHAT DRAWER & QUICK REACTIONS
+// IN-GAME COMPACT CHAT & QUICK REACTIONS (NON-BLOCKING)
 // File: frontend/src/chat/InGameChat.tsx
 // ==============================================================================
 
 import React, { useState, useRef, useEffect } from "react";
 import { ChatMessage, QuickReactionEvent } from "./types";
-import { MessageSquare, Send, X, Volume2, VolumeX, Smile } from "lucide-react";
+import { MessageSquare, Send, X, Smile, ChevronUp, ChevronDown } from "lucide-react";
 import { sounds } from "../telegram/audio";
 import { haptics } from "../telegram/haptics";
-import { getPlayerAvatar } from "../utils/avatar";
 
 interface InGameChatProps {
   sessionId: string;
@@ -21,7 +20,8 @@ interface InGameChatProps {
   floatingReactions?: QuickReactionEvent[];
 }
 
-const EMOJI_TRAY = ["🔥", "👍", "😂", "😱", "🎉", "💔", "👀", "🤡"];
+const EMOJI_TRAY = ["🔥", "👍", "😂", "😱", "🎉", "👀"];
+const QUICK_PHRASES = ["UNO! 🔥", "Good luck! 🍀", "Nice move! 👏", "Hurry up! ⏳", "Haha 😂", "GG! 🏆"];
 
 export const InGameChat: React.FC<InGameChatProps> = ({
   currentUserId,
@@ -31,54 +31,46 @@ export const InGameChat: React.FC<InGameChatProps> = ({
   floatingReactions = [],
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [inputText, setInputText] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
   const [lastSentTime, setLastSentTime] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
   useEffect(() => {
-    if (isOpen) {
+    if (showHistory) {
       setUnreadCount(0);
-      scrollToBottom();
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } else if (messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
       if (lastMsg.senderId !== currentUserId) {
         setUnreadCount((prev) => prev + 1);
-        if (!isMuted) {
-          sounds.playCard();
-          haptics.impact("light");
-        }
+        sounds.playCard();
+        haptics.impact("light");
       }
     }
-  }, [messages, isOpen]);
+  }, [messages, showHistory]);
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = inputText.trim();
-    if (!text) return;
+  const handleSendText = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
 
-    // Anti-spam cooldown (1.5 seconds)
+    // Anti-spam cooldown (1s)
     const now = Date.now();
-    if (now - lastSentTime < 1500) {
+    if (now - lastSentTime < 1000) {
       haptics.notification("warning");
       return;
     }
 
     setLastSentTime(now);
-    onSendMessage(text);
+    onSendMessage(trimmed);
     setInputText("");
-    haptics.impact("light");
+    haptics.impact("medium");
   };
 
-  const handleQuickReaction = (emoji: string) => {
-    haptics.selection();
-    onSendReaction(emoji);
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSendText(inputText);
   };
 
   return (
@@ -88,7 +80,7 @@ export const InGameChat: React.FC<InGameChatProps> = ({
         {floatingReactions.map((r) => (
           <div
             key={r.id}
-            className="absolute bottom-24 right-10 text-4xl animate-bounce-short transition-all duration-1000"
+            className="absolute bottom-28 right-8 text-4xl animate-bounce-short transition-all duration-1000"
             style={{
               animation: "floatUp 2.5s ease-out forwards",
             }}
@@ -98,143 +90,155 @@ export const InGameChat: React.FC<InGameChatProps> = ({
         ))}
       </div>
 
-      {/* 2. Floating Chat Toggle Pill Button (Bottom Right) */}
-      <div className="fixed bottom-4 right-4 z-30 flex items-center space-x-2">
-        {/* Quick Reaction Bar */}
-        <div className="flex items-center space-x-1 bg-slate-900/85 backdrop-blur-md px-2 py-1.5 rounded-full border border-slate-700/80 shadow-xl">
-          {EMOJI_TRAY.slice(0, 4).map((emoji) => (
-            <button
-              key={emoji}
-              onClick={() => handleQuickReaction(emoji)}
-              className="text-lg hover:scale-125 active:scale-95 transition-transform px-1"
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-
-        {/* Chat Drawer Toggle Button with Unread Badge */}
-        <button
-          onClick={() => {
-            setIsOpen(!isOpen);
-            haptics.impact("medium");
-          }}
-          className="relative bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-full shadow-2xl transition-transform active:scale-90 border-2 border-indigo-400/50"
-        >
-          <MessageSquare className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-black text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 animate-pulse">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* 3. Slide-Over Chat Drawer Panel */}
-      {isOpen && (
-        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-80 bg-[#161B26]/95 backdrop-blur-xl border-l border-slate-800 shadow-2xl flex flex-col justify-between animate-slide-left">
-          {/* Header */}
-          <div className="p-3.5 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <MessageSquare className="w-4 h-4 text-indigo-400" />
-              <h3 className="font-extrabold text-white text-sm">Match Chat</h3>
-            </div>
-            <div className="flex items-center space-x-1">
-              <button
-                onClick={() => setIsMuted(!isMuted)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-              >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </button>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Messages Body */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-3 scrollbar-thin">
-            {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 text-xs">
-                <Smile className="w-8 h-8 mb-2 opacity-50" />
-                <p>No messages in this match yet.</p>
-                <p>Say hi or cheer your teammates!</p>
-              </div>
-            ) : (
-              messages.map((msg) => {
-                const isMe = msg.senderId === currentUserId;
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
-                  >
-                    <div className="flex items-center space-x-1.5 mb-0.5">
-                      {!isMe && (
-                        <img
-                          src={getPlayerAvatar(msg.senderAvatar, msg.senderName, msg.senderId)}
-                          alt={msg.senderName}
-                          className="w-4 h-4 rounded-full object-cover bg-slate-800"
-                        />
-                      )}
-                      <span className="text-[10px] font-bold text-slate-400">
-                        {isMe ? "You" : msg.senderName}
-                      </span>
-                      <span className="text-[9px] text-slate-600 font-mono">
-                        {new Date(msg.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-
-                    <div
-                      className={`max-w-[85%] px-3 py-2 rounded-2xl text-xs break-words shadow ${
-                        isMe
-                          ? "bg-indigo-600 text-white rounded-br-none"
-                          : "bg-slate-800 text-slate-100 rounded-bl-none border border-slate-700/60"
-                      }`}
-                    >
-                      {msg.content}
-                    </div>
-                  </div>
-                );
-              })
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick Reaction Bar Inside Drawer */}
-          <div className="px-3 py-2 border-t border-slate-800/80 bg-slate-900/60 flex items-center justify-between">
-            {EMOJI_TRAY.map((emoji) => (
+      {/* 2. Floating Quick Emoji & Chat Toggle Buttons (Bottom-Right Floating Dock) */}
+      {!isOpen && (
+        <div className="fixed bottom-3 right-3 z-30 flex items-center space-x-1.5 select-none">
+          {/* Quick Reaction Bar */}
+          <div className="flex items-center space-x-1 bg-slate-900/90 backdrop-blur-md px-2 py-1 rounded-full border border-slate-700/80 shadow-2xl">
+            {EMOJI_TRAY.slice(0, 4).map((emoji) => (
               <button
                 key={emoji}
-                onClick={() => handleQuickReaction(emoji)}
-                className="text-lg hover:scale-125 active:scale-95 transition-transform"
+                onClick={() => {
+                  haptics.selection();
+                  onSendReaction(emoji);
+                }}
+                className="text-lg hover:scale-125 active:scale-95 transition-transform px-1"
               >
                 {emoji}
               </button>
             ))}
           </div>
 
-          {/* Input Box */}
-          <form onSubmit={handleSend} className="p-3 border-t border-slate-800 flex items-center space-x-2">
+          {/* Toggle Chat Bar Button */}
+          <button
+            onClick={() => {
+              setIsOpen(true);
+              haptics.impact("medium");
+            }}
+            className="relative bg-gradient-to-tr from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white p-2.5 rounded-full shadow-2xl transition-transform active:scale-90 border-2 border-indigo-400/60"
+          >
+            <MessageSquare className="w-4 h-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-rose-500 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-slate-950 animate-pulse">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* 3. Non-Blocking Floating Chat Drawer (Bottom 25% max, board stays fully visible!) */}
+      {isOpen && (
+        <div className="fixed bottom-0 inset-x-0 z-40 max-w-lg mx-auto bg-slate-950/95 backdrop-blur-xl border-t border-indigo-500/40 rounded-t-3xl shadow-2xl p-2.5 space-y-2 select-none animate-slide-up">
+          {/* Top Bar with History Toggle & Close Button */}
+          <div className="flex items-center justify-between px-2 pt-0.5">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center space-x-1 text-xs font-bold text-indigo-400 hover:text-indigo-300"
+            >
+              <span>Match Chat</span>
+              {showHistory ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+              {messages.length > 0 && (
+                <span className="text-[10px] text-slate-500">({messages.length})</span>
+              )}
+            </button>
+
+            <div className="flex items-center space-x-2">
+              {/* Emojis row inside bar */}
+              <div className="flex space-x-1">
+                {EMOJI_TRAY.map((em) => (
+                  <button
+                    key={em}
+                    onClick={() => {
+                      haptics.selection();
+                      onSendReaction(em);
+                    }}
+                    className="text-base hover:scale-125 active:scale-90 transition-transform"
+                  >
+                    {em}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setShowHistory(false);
+                  haptics.impact("light");
+                }}
+                className="p-1 rounded-full text-slate-400 hover:text-white bg-slate-800/80"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Collapsible Message History (Max 140px, semi-transparent) */}
+          {showHistory && (
+            <div className="max-h-36 overflow-y-auto px-2 py-1 space-y-1.5 scrollbar-thin border-y border-slate-800/80 bg-slate-900/50 rounded-xl">
+              {messages.length === 0 ? (
+                <div className="py-3 text-center text-slate-500 text-xs">
+                  No messages yet. Send a quick chat or phrase!
+                </div>
+              ) : (
+                messages.map((msg) => {
+                  const isMe = msg.senderId === currentUserId;
+                  return (
+                    <div
+                      key={msg.id}
+                      className={`flex flex-col text-xs ${isMe ? "items-end" : "items-start"}`}
+                    >
+                      <div className="flex items-center space-x-1 mb-0.5">
+                        <span className="text-[9px] font-bold text-slate-400">
+                          {isMe ? "You" : msg.senderName}
+                        </span>
+                      </div>
+                      <div
+                        className={`px-2.5 py-1 rounded-xl text-xs max-w-[85%] break-words ${
+                          isMe
+                            ? "bg-indigo-600 text-white rounded-br-none"
+                            : "bg-slate-800 text-slate-100 rounded-bl-none border border-slate-700/60"
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+
+          {/* Quick Chat Preset Phrases (1-tap sends speech bubble!) */}
+          <div className="flex space-x-1.5 overflow-x-auto py-1 scrollbar-none">
+            {QUICK_PHRASES.map((phrase) => (
+              <button
+                key={phrase}
+                onClick={() => handleSendText(phrase)}
+                className="px-2.5 py-1 rounded-xl bg-slate-800/90 hover:bg-indigo-950/80 border border-slate-700/80 text-slate-200 hover:text-white text-[11px] font-extrabold whitespace-nowrap active:scale-95 transition-transform shadow"
+              >
+                {phrase}
+              </button>
+            ))}
+          </div>
+
+          {/* Custom Text Input */}
+          <form onSubmit={handleFormSubmit} className="flex items-center space-x-1.5 pt-0.5">
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Type in-game message..."
-              maxLength={280}
-              className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              placeholder="Type message (pops up on your avatar)..."
+              maxLength={120}
+              className="flex-1 bg-slate-900 border border-slate-700/90 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
             />
             <button
               type="submit"
               disabled={!inputText.trim()}
-              className="bg-indigo-600 disabled:opacity-50 hover:bg-indigo-500 text-white p-2 rounded-xl transition-all shadow"
+              className="bg-indigo-600 disabled:opacity-40 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow flex items-center space-x-1"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5" />
             </button>
           </form>
         </div>

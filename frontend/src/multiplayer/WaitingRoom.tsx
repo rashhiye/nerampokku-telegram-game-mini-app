@@ -16,6 +16,7 @@ interface WaitingRoomProps {
   isHost: boolean;
   onStartMatch: () => void;
   onLeaveRoom: () => void;
+  onCloseRoom?: () => void;
   onAddBot?: () => void;
 }
 
@@ -26,9 +27,11 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
   isHost,
   onStartMatch,
   onLeaveRoom,
+  onCloseRoom,
   onAddBot,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
 
   const canStart = players.length >= session.minPlayers;
   const isUno = session.gameType === "uno";
@@ -181,13 +184,62 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
         )}
 
         <button
-          onClick={onLeaveRoom}
+          onClick={() => {
+            if (isHost) {
+              setShowExitModal(true);
+            } else {
+              onLeaveRoom();
+            }
+          }}
           className="w-full py-2.5 rounded-2xl font-bold text-xs text-rose-400 hover:bg-rose-950/20 border border-rose-900/50 flex items-center justify-center space-x-1.5 transition-colors"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>Leave Room</span>
+          <span>{isHost ? "Leave / Close Room" : "Leave Room"}</span>
         </button>
       </div>
+
+      {/* Host Exit / Close Room Modal */}
+      {showExitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#161B26] border border-slate-700 rounded-3xl p-5 max-w-xs w-full text-center shadow-2xl space-y-4">
+            <h3 className="text-base font-black text-white">Room Options</h3>
+            <p className="text-xs text-slate-400">
+              As host, you can close this room for everyone or simply exit.
+            </p>
+
+            <div className="space-y-2">
+              {onCloseRoom && (
+                <button
+                  onClick={() => {
+                    setShowExitModal(false);
+                    onCloseRoom();
+                  }}
+                  className="w-full py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow transition-all active:scale-95"
+                >
+                  🛑 Close & Disband Room
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setShowExitModal(false);
+                  onLeaveRoom();
+                }}
+                className="w-full py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 active:scale-95"
+              >
+                Leave Room
+              </button>
+
+              <button
+                onClick={() => setShowExitModal(false)}
+                className="w-full py-2 rounded-2xl text-slate-400 font-bold text-xs hover:text-white"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

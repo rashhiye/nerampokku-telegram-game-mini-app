@@ -41,13 +41,17 @@ export const UnoCardView: React.FC<UnoCardViewProps> = ({
     return (
       <div
         onClick={onClick}
-        className={`${sizeClasses} bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border-2 border-indigo-500/40 shadow-lg flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200 ${
-          onClick ? "cursor-pointer active:scale-95 hover:border-indigo-400" : ""
+        className={`${sizeClasses} bg-[#121622] border-2 border-white/90 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200 ${
+          onClick ? "cursor-pointer active:scale-95 hover:scale-105 hover:border-amber-400" : ""
         }`}
       >
-        <div className="w-full h-full absolute inset-0 opacity-15 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:8px_8px]" />
-        <div className="w-10 h-10 rounded-full border border-indigo-400/40 bg-indigo-950/60 flex items-center justify-center shadow-inner">
-          <span className="text-amber-400 font-black text-xs font-malayalam tracking-normal">നേ</span>
+        {/* Iconic Tilted Red Oval on Back */}
+        <div
+          className="w-[85%] h-[60%] rounded-full bg-gradient-to-tr from-rose-600 via-red-500 to-amber-500 border border-amber-300 shadow-md flex items-center justify-center -rotate-20"
+        >
+          <span className="font-black italic text-white text-xs sm:text-sm tracking-tighter drop-shadow">
+            UNO
+          </span>
         </div>
       </div>
     );
