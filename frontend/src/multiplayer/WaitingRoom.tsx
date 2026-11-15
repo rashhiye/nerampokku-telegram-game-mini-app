@@ -44,7 +44,7 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
   const handleTelegramShare = () => {
     const botUser = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "NeramPokkuBot";
     const shareUrl = `https://t.me/${botUser}/nerampokku?startapp=g_${session.groupId}_s_${session.id}`;
-    const text = `🎮 നേരംപോക്കിൽ ${isUno ? "UNO" : "LUDO"} കളിക്കാൻ വരൂ! സീറ്റുകൾ: ${players.length}/${session.maxPlayers} — കളിക്കാം... സമയം പോക്കാം!`;
+    const text = `🎮 Join me on നേരംപോക്ക് to play ${isUno ? "UNO" : "LUDO"}! Seats: ${players.length}/${session.maxPlayers} — Tap to play!`;
     const tgShareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
     window.open(tgShareLink, "_blank");
   };

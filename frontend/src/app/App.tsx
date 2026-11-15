@@ -122,7 +122,7 @@ export const App: React.FC = () => {
   const handleAddBot = () => {
     if (!currentSession || roomPlayers.length >= currentSession.maxPlayers) return;
     const botIdx = roomPlayers.length;
-    const botNames = ["Bot ചന്തു", "Bot അപ്പു", "Bot മാളു", "Bot രാജു", "Bot ദാസൻ"];
+    const botNames = ["Bot Chandu", "Bot Appu", "Bot Malu", "Bot Raju", "Bot Dasan"];
     const newBot: SessionPlayerInfo = {
       id: `bot_${botIdx}_${Date.now()}`,
       profileId: `bot_${botIdx}`,
@@ -416,25 +416,26 @@ export const App: React.FC = () => {
         {screen === "help" && (
           <div className="w-full max-w-md mx-auto p-4 space-y-4 pb-20">
             <div className="flex items-center space-x-2">
-              <h2 className="text-xl font-black text-white font-malayalam">നേരംപോക്ക് — നിയമങ്ങൾ</h2>
+              <h2 className="text-xl font-black text-white font-malayalam">നേരംപോക്ക്</h2>
               <span className="text-[10px] font-bold text-indigo-400 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-800">GAME RULES</span>
             </div>
             
             <div className="p-4 rounded-3xl bg-[#161B26] border border-slate-800 space-y-2 text-xs text-slate-300">
-              <h3 className="font-bold text-amber-400 text-sm">🃏 UNO (3-6 Players)</h3>
-              <p>• കളറിലോ നമ്പറിലോ ചിഹ്നത്തിലോ മാച്ച് ചെയ്യുക.</p>
-              <p>• ആക്ഷൻ കാർഡുകൾ: Skip, Reverse, Draw Two (+2).</p>
-              <p>• Wild കാർഡുകൾ ഏത് കളറിലേക്കും മാറ്റാം. Wild +4 ചലഞ്ച് ചെയ്യാം!</p>
-              <p>• കയ്യിൽ 1 കാർഡ് ബാക്കിയാകുമ്പോൾ <strong>"Call UNO!"</strong> അടിക്കുക, അല്ലെങ്കിൽ എതിരാളികൾക്ക് ക്യാച്ച് ചെയ്യാം!</p>
+              <h3 className="font-bold text-amber-400 text-sm">🃏 UNO (3–6 Players)</h3>
+              <p>• Match cards from your hand by color, number, or action symbol.</p>
+              <p>• Action cards: <strong>Skip</strong> (skips next player), <strong>Reverse</strong> (reverses turn order), <strong>Draw Two</strong> (+2 penalty cards).</p>
+              <p>• <strong>Wild cards</strong> can be played on any card to choose the active color. <strong>Wild Draw Four (+4)</strong> can be challenged!</p>
+              <p>• When you have only 1 card left, tap <strong>"Call UNO!"</strong> before opponents catch you, or draw a 2-card penalty!</p>
+              <p>• First player to discard all their cards wins the round!</p>
             </div>
 
             <div className="p-4 rounded-3xl bg-[#161B26] border border-slate-800 space-y-2 text-xs text-slate-300">
               <h3 className="font-bold text-blue-400 text-sm">🎲 LUDO (4, 5 & 6 Players)</h3>
-              <p>• തട്ടിൽ നിന്ന് ഇറങ്ങാൻ നിർബന്ധമായും <strong>6</strong> വീഴണം.</p>
-              <p>• 6 വീണാൽ വീണ്ടും റോൾ ചെയ്യാം (തുടർച്ചയായി 3 പ്രാവശ്യം 6 വീണാൽ ചാൻസ് പോകും).</p>
-              <p>• സേഫ് അല്ലാത്ത കട്ടകളിൽ ഉള്ള എതിരാളിയുടെ കോയിൻ വെട്ടി ബേസിലേക്ക് അയക്കാം!</p>
-              <p>• സ്റ്റാർ (Star) ഉള്ള കട്ടകൾ 100% സേഫ് ആണ്.</p>
-              <p>• ഹോം സെന്ററിലേക്ക് കൃത്യമായ നമ്പർ വീഴണം!</p>
+              <p>• Roll a <strong>6</strong> on the dice to release a token from your base onto the starting track.</p>
+              <p>• Rolling a 6 grants an immediate extra roll (three consecutive sixes forfeits your turn).</p>
+              <p>• Land on an opponent's token on non-safe squares to capture it and send it back to their base!</p>
+              <p>• Star squares (★) and starting positions are 100% safe zones from capture.</p>
+              <p>• Reach the Home center with an exact dice roll. First player to get all 4 tokens Home wins!</p>
             </div>
           </div>
         )}
@@ -467,7 +468,7 @@ export const App: React.FC = () => {
             }`}
           >
             <Home className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold font-malayalam">ലോബി</span>
+            <span className="text-[10px] font-bold">Lobby</span>
           </button>
 
           <button
@@ -480,7 +481,7 @@ export const App: React.FC = () => {
             }`}
           >
             <Trophy className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold font-malayalam">റാങ്ക്</span>
+            <span className="text-[10px] font-bold">Leaderboard</span>
           </button>
 
           <button
@@ -493,7 +494,7 @@ export const App: React.FC = () => {
             }`}
           >
             <User className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold font-malayalam">പ്രൊഫൈൽ</span>
+            <span className="text-[10px] font-bold">Profile</span>
           </button>
 
           <button
@@ -506,7 +507,7 @@ export const App: React.FC = () => {
             }`}
           >
             <HelpCircle className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold font-malayalam">നിയമങ്ങൾ</span>
+            <span className="text-[10px] font-bold">Rules</span>
           </button>
         </nav>
       )}

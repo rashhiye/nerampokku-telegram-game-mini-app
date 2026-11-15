@@ -78,18 +78,18 @@ bot.command("start", async (ctx) => {
   }
 
   const keyboard = new InlineKeyboard()
-    .url("🚀 കളിക്കാം നേരംപോക്ക് (Open)", miniAppUrl)
+    .url("🚀 Play നേരംപോക്ക്", miniAppUrl)
     .row()
-    .url("➕ ഗ്രൂപ്പിലേക്ക് ആഡ് ചെയ്യൂ (Add to Group)", `https://t.me/${botUsername}?startgroup=true`);
+    .url("➕ Add to Group", `https://t.me/${botUsername}?startgroup=true`);
 
   await ctx.reply(
-    `🌟 *സ്വാഗതം നേരംപോക്കിലേക്ക്!* 🎮\n` +
-    `_കളിക്കാം... സമയം പോക്കാം!_\n\n` +
-    `ടെലിഗ്രാം ഗ്രൂപ്പിൽ സുഹൃത്തുക്കളോടൊപ്പം തത്സമയം കളിക്കാം:\n\n` +
-    `🃏 *UNO* (3–6 Players): Action Cards, Reverse, Wild +4 Challenge, ആവേശപ്പോരാട്ടം!\n` +
-    `🎲 *LUDO* (4, 5 & 6 Players): ഒറിജിനൽ 4P, 5P Pentagonal & 6P Hexagonal ബോർഡുകൾ, ലൈവ് ഡൈസ് റോളിംഗ്!\n\n` +
-    `💬 ഇൻ-ഗെയിം ചാറ്റും ലൈവ് ഇമോജി റിയാക്ഷനുകളും!\n\n` +
-    `👉 എന്നെ ഒരു ഗ്രൂപ്പിലേക്ക് ആഡ് ചെയ്ത് /games എന്ന് അയക്കൂ! റൂം കോഡ് ആവശ്യമില്ല!`,
+    `🌟 *Welcome to നേരംപോക്ക്!* 🎮\n` +
+    `_Multiplayer Gaming for Telegram Groups_\n\n` +
+    `Play real-time multiplayer games with your group friends:\n\n` +
+    `🃏 *UNO* (3–6 Players): Action Cards, Reverse, Wild +4 Challenge!\n` +
+    `🎲 *LUDO* (4, 5 & 6 Players): Dedicated 4P, 5P Pentagonal & 6P Hexagonal Boards!\n\n` +
+    `💬 In-Game Chat & Live Reactions!\n\n` +
+    `👉 Add me to a group and send /games to play! Zero room codes required!`,
     { parse_mode: "Markdown", reply_markup: keyboard }
   );
 });
@@ -97,17 +97,16 @@ bot.command("start", async (ctx) => {
 // /games command (The core group launch trigger)
 bot.command("games", async (ctx) => {
   const chatId = ctx.chat.id;
-  const chatTitle = ctx.chat.title || "ഗ്രൂപ്പ്";
+  const chatTitle = ctx.chat.title || "Group";
   const miniAppUrl = `https://t.me/${botUsername}/nerampokku?startapp=g_${chatId}`;
 
-  const keyboard = new InlineKeyboard().url("🔥 കളിക്കാം (Play Now)", miniAppUrl);
+  const keyboard = new InlineKeyboard().url("🔥 Play Now", miniAppUrl);
 
   await ctx.reply(
-    `🎮 *നേരംപോക്ക് — GAME HUB*\n` +
-    `_കളിക്കാം... സമയം പോക്കാം!_\n\n` +
-    `*${chatTitle}* ഗ്രൂപ്പിൽ കളിക്കാൻ റെഡിയാണോ?\n` +
-    `താഴെ കാണുന്ന ബട്ടൺ അമർത്തി ഉടൻ തന്നെ ഒരു UNO അല്ലെങ്കിൽ LUDO മാച്ചിൽ പങ്കുചേരൂ!\n\n` +
-    `⚡ റൂം കോഡ് ആവശ്യമില്ല — ഗ്രൂപ്പിലുള്ള എല്ലാവർക്കും നേരിട്ട് കയറാം!`,
+    `🎮 *നേരംപോക്ക് — GAME HUB*\n\n` +
+    `Ready to play in *${chatTitle}*?\n` +
+    `Tap the button below to join an UNO or LUDO match with your group!\n\n` +
+    `⚡ Zero room codes — open to all group members!`,
     { parse_mode: "Markdown", reply_markup: keyboard }
   );
 });
@@ -115,22 +114,23 @@ bot.command("games", async (ctx) => {
 // /help command
 bot.command("help", async (ctx) => {
   await ctx.reply(
-    `📖 *നേരംപോക്ക് — ഗെയിം റൂളുകൾ (Game Rules)*\n\n` +
+    `📖 *നേരംപോക്ക് — Game Rules*\n\n` +
     `*UNO (3–6 Players):*\n` +
-    `• കളറിലോ നമ്പറിലോ ചിഹ്നത്തിലോ മാച്ച് ചെയ്യുക\n` +
-    `• Skip, Reverse, Draw Two (+2) ആക്ഷൻ കാർഡുകൾ\n` +
-    `• Wild +4 ചലഞ്ച് ചെയ്യാം!\n` +
-    `• കയ്യിൽ 1 കാർഡ് ആവുമ്പോൾ "UNO!" എന്ന് വിളിക്കുക\n\n` +
+    `• Match cards by color, number, or action symbol\n` +
+    `• Action cards: Skip, Reverse, Draw Two (+2)\n` +
+    `• Wild +4 can be challenged!\n` +
+    `• Tap "Call UNO!" before playing your 2nd-to-last card\n\n` +
     `*LUDO (4, 5 & 6 Players):*\n` +
-    `• ബേസിൽ നിന്ന് ഇറങ്ങാൻ 6 വീഴണം\n` +
-    `• 6 വീണാൽ എക്സ്ട്രാ റോൾ (തുടർച്ചയായി 3 പ്രാവശ്യം 6 വീണാൽ ചാൻസ് പോകും)\n` +
-    `• എതിരാളിയുടെ കോയിൻ വെട്ടാം; സ്റ്റാർ കട്ടകൾ 100% സേഫ് ആണ്\n` +
-    `• 4 കോയിനുകളും ഹോമിൽ എത്തിക്കുന്നയാൾ വിജയിക്കും!\n\n` +
-    `*കമാൻഡുകൾ:*\n` +
-    `/games — ഗ്രൂപ്പ് മാച്ച് ഹബ് തുറക്കാൻ\n` +
-    `/profile — നിങ്ങളുടെ സ്റ്റാറ്റ്സ് കാണാൻ\n` +
-    `/stats — ലീഡർബോർഡ് കാണാൻ\n` +
-    `/help — ഈ ഗൈഡ് കാണാൻ`,
+    `• Roll a 6 to enter the track\n` +
+    `• Rolling 6 grants an extra roll (max 3 consecutive)\n` +
+    `• Land on opponents to capture and send them to base\n` +
+    `• Star squares and start squares are 100% safe\n` +
+    `• Reach the center with all 4 tokens to win!\n\n` +
+    `*Commands:*\n` +
+    `/games — Open group games\n` +
+    `/profile — View your stats\n` +
+    `/stats — View top leaderboard\n` +
+    `/help — View this guide`,
     { parse_mode: "Markdown" }
   );
 });

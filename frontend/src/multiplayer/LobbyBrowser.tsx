@@ -76,8 +76,8 @@ export const LobbyBrowser: React.FC<LobbyBrowserProps> = ({
       {/* Brand Header */}
       <div className="flex items-center justify-between pt-1 pb-1">
         <Logo size="md" showTagline={true} />
-        <span className="text-[11px] font-bold text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-xl border border-amber-800/60 font-malayalam">
-          കളിക്കാം!
+        <span className="text-[11px] font-bold text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-xl border border-amber-800/60">
+          Play Now!
         </span>
       </div>
 
