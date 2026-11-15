@@ -1,4 +1,8 @@
-# GAMEVERSE — OFFICIAL GAME RULES & MECHANICS
+# നേരംപോക്ക് (NERAMPOKKU) — OFFICIAL GAME RULES & MECHANICS
+
+> **Official Name:** നേരംപോക്ക്  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **Descriptor:** GAME BOT  
 
 ## 1. UNO Game Rules
 

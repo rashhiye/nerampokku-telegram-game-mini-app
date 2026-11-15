@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import { GameSessionInfo, GameType } from "./types";
 import { Plus, Users, Play, Shield, Settings, Sparkles, RefreshCw } from "lucide-react";
 import { haptics } from "../telegram/haptics";
+import { Logo } from "../components/common/Logo";
 
 interface LobbyBrowserProps {
   currentGroupId?: string;
@@ -72,6 +73,14 @@ export const LobbyBrowser: React.FC<LobbyBrowserProps> = ({
 
   return (
     <div className="w-full max-w-lg mx-auto p-4 space-y-4 select-none pb-20">
+      {/* Brand Header */}
+      <div className="flex items-center justify-between pt-1 pb-1">
+        <Logo size="md" showTagline={true} />
+        <span className="text-[11px] font-bold text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-xl border border-amber-800/60 font-malayalam">
+          കളിക്കാം!
+        </span>
+      </div>
+
       {/* Group Context Banner */}
       <div className="p-4 rounded-3xl bg-gradient-to-r from-indigo-950/80 via-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-xl flex items-center justify-between">
         <div>

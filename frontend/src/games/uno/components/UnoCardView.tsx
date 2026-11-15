@@ -46,8 +46,8 @@ export const UnoCardView: React.FC<UnoCardViewProps> = ({
         }`}
       >
         <div className="w-full h-full absolute inset-0 opacity-15 bg-[radial-gradient(#6366f1_1px,transparent_1px)] [background-size:8px_8px]" />
-        <div className="w-10 h-10 rounded-full border border-indigo-400/30 flex items-center justify-center">
-          <span className="text-indigo-400 font-black text-[10px] tracking-wider">GV</span>
+        <div className="w-10 h-10 rounded-full border border-indigo-400/40 bg-indigo-950/60 flex items-center justify-center shadow-inner">
+          <span className="text-amber-400 font-black text-xs font-malayalam tracking-normal">നേ</span>
         </div>
       </div>
     );

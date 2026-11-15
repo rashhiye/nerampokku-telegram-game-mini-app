@@ -1,4 +1,8 @@
-# GAMEVERSE — PRODUCTION DEPLOYMENT GUIDE
+# നേരംപോക്ക് (NERAMPOKKU) — PRODUCTION DEPLOYMENT GUIDE
+
+> **Official Name:** നേരംപോക്ക്  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **Descriptor:** GAME BOT  
 
 ## 1. Cloudflare Pages (Frontend)
 
@@ -9,8 +13,8 @@
 5. Configure Environment Variables:
    - `VITE_SUPABASE_URL`: `https://your-project.supabase.co`
    - `VITE_SUPABASE_ANON_KEY`: `eyJhbGciOi...`
-   - `VITE_TELEGRAM_BOT_USERNAME`: `YourBotUsername`
-6. Deploy! Your app will be live at `https://your-app.pages.dev`.
+   - `VITE_TELEGRAM_BOT_USERNAME`: `NeramPokkuBot`
+6. Deploy! Your app will be live at `https://nerampokku.pages.dev`.
 
 ---
 

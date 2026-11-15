@@ -11,7 +11,7 @@ serve(async (req) => {
   const webhookSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const botUsername = Deno.env.get("VITE_TELEGRAM_BOT_USERNAME") || "GameVerseBot";
+  const botUsername = Deno.env.get("VITE_TELEGRAM_BOT_USERNAME") || "NeramPokkuBot";
 
   if (!botToken || !supabaseUrl || !supabaseServiceKey) {
     return new Response("Configuration missing", { status: 500 });
@@ -66,52 +66,18 @@ serve(async (req) => {
 
       // Command Router
       if (text.startsWith("/start")) {
-        const miniAppUrl = `https://t.me/${botUsername}/gameverse${
+        const miniAppUrl = `https://t.me/${botUsername}/nerampokku${
           chatType !== "private" ? `?startapp=g_${chatId}` : ""
         }`;
 
         const replyText =
-          `🌟 *Welcome to GAMEVERSE — PLAY TOGETHER!* 🎮\n\n` +
-          `Experience high-speed, real-time multiplayer games right inside Telegram:\n\n` +
-          `🃏 *UNO* (3–6 Players): Play Action Cards, Reverse, Wild +4 Challenges, and race to 0 cards!\n` +
-          `🎲 *LUDO* (4 & 6 Players): Dedicated 4P and 6P hexagonal boards with server-authoritative dice!\n\n` +
-          `💬 In-Game Live Chat & Fast Emoji Reactions in every match\\!\n\n` +
-          `👉 *Add me to a group* and send /games to play with friends without room codes\\!`;
-
-        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: replyText,
-            parse_mode: "MarkdownV2",
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: "🚀 Launch GAMEVERSE",
-                    url: miniAppUrl,
-                  },
-                ],
-                [
-                  {
-                    text: "➕ Add to Group",
-                    url: `https://t.me/${botUsername}?startgroup=true`,
-                  },
-                ],
-              ],
-            },
-          }),
-        });
-      } else if (text.startsWith("/games")) {
-        // Group Game Selector
-        const miniAppUrl = `https://t.me/${botUsername}/gameverse?startapp=g_${chatId}`;
-
-        const replyText =
-          `🎮 *GAMEVERSE MATCH HUB*\n\n` +
-          `Ready to play in *${chatTitle}*?\n` +
-          `Tap below to join an active room or create a new UNO or LUDO match for this group\\!\n\n` +
-          `⚡ No room codes needed — all group members join the same space\\!`;
+          `🌟 *സ്വാഗതം നേരംപോക്കിലേക്ക്!* 🎮\n` +
+          `_കളിക്കാം... സമയം പോക്കാം!_\n\n` +
+          `ടെലിഗ്രാം ഗ്രൂപ്പിൽ സുഹൃത്തുക്കളോടൊപ്പം തത്സമയം കളിക്കാം:\n\n` +
+          `🃏 *UNO* (3–6 Players): Action Cards, Reverse, Wild +4 Challenge, ആവേശപ്പോരാട്ടം!\n` +
+          `🎲 *LUDO* (4 & 6 Players): ഒറിജിനൽ 4P & 6P Hexagonal ബോർഡുകൾ, ലൈവ് ഡൈസ് റോളിംഗ്!\n\n` +
+          `💬 ഇൻ-ഗെയിം ചാറ്റും ലൈവ് ഇമോജി റിയാക്ഷനുകളും!\n\n` +
+          `👉 എന്നെ ഒരു ഗ്രൂപ്പിലേക്ക് ആഡ് ചെയ്ത് /games എന്ന് അയക്കൂ! റൂം കോഡ് ആവശ്യമില്ല!`;
 
         await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: "POST",
@@ -124,7 +90,43 @@ serve(async (req) => {
               inline_keyboard: [
                 [
                   {
-                    text: "🔥 Play in this Group",
+                    text: "🚀 കളിക്കാം നേരംപോക്ക്",
+                    url: miniAppUrl,
+                  },
+                ],
+                [
+                  {
+                    text: "➕ ഗ്രൂപ്പിലേക്ക് ആഡ് ചെയ്യൂ",
+                    url: `https://t.me/${botUsername}?startgroup=true`,
+                  },
+                ],
+              ],
+            },
+          }),
+        });
+      } else if (text.startsWith("/games")) {
+        // Group Game Selector
+        const miniAppUrl = `https://t.me/${botUsername}/nerampokku?startapp=g_${chatId}`;
+
+        const replyText =
+          `🎮 *നേരംപോക്ക് — GAME HUB*\n` +
+          `_കളിക്കാം... സമയം പോക്കാം!_\n\n` +
+          `*${chatTitle}* ഗ്രൂപ്പിൽ കളിക്കാൻ റെഡിയാണോ?\n` +
+          `താഴെ കാണുന്ന ബട്ടൺ അമർത്തി ഉടൻ തന്നെ ഒരു UNO അല്ലെങ്കിൽ LUDO മാച്ചിൽ പങ്കുചേരൂ!\n\n` +
+          `⚡ റൂം കോഡ് ആവശ്യമില്ല — ഗ്രൂപ്പിലുള്ള എല്ലാവർക്കും നേരിട്ട് കയറാം!`;
+
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: replyText,
+            parse_mode: "Markdown",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "🔥 കളിക്കാം (Play Now)",
                     url: miniAppUrl,
                   },
                 ],
@@ -134,9 +136,22 @@ serve(async (req) => {
         });
       } else if (text.startsWith("/help")) {
         const helpText =
-          `📖 *GAMEVERSE Help & Game Rules*\n\n` +
+          `📖 *നേരംപോക്ക് — ഗെയിം റൂളുകൾ (Game Rules)*\n\n` +
           `*UNO (3–6 Players):*\n` +
-          `• Match by Color or Number/Symbol\n` +
+          `• കളറിലോ നമ്പറിലോ ചിഹ്നത്തിലോ മാച്ച് ചെയ്യുക\n` +
+          `• Skip, Reverse, Draw Two (+2) ആക്ഷൻ കാർഡുകൾ\n` +
+          `• Wild +4 ചലഞ്ച് ചെയ്യാം!\n` +
+          `• കയ്യിൽ 1 കാർഡ് ആവുമ്പോൾ "UNO!" എന്ന് വിളിക്കുക\n\n` +
+          `*LUDO (4 & 6 Players):*\n` +
+          `• ബേസിൽ നിന്ന് ഇറങ്ങാൻ 6 വീഴണം\n` +
+          `• 6 വീണാൽ എക്സ്ട്രാ റോൾ (തുടർച്ചയായി 3 പ്രാവശ്യം 6 വീണാൽ ചാൻസ് പോകും)\n` +
+          `• എതിരാളിയുടെ കോയിൻ വെട്ടാം; സ്റ്റാർ കട്ടകൾ 100% സേഫ് ആണ്\n` +
+          `• 4 കോയിനുകളും ഹോമിൽ എത്തിക്കുന്നയാൾ വിജയിക്കും!\n\n` +
+          `*കമാൻഡുകൾ:*\n` +
+          `/games — ഗ്രൂപ്പ് മാച്ച് ഹബ് തുറക്കാൻ\n` +
+          `/profile — നിങ്ങളുടെ സ്റ്റാറ്റ്സ് കാണാൻ\n` +
+          `/stats — ലീഡർബോർഡ് കാണാൻ\n` +
+          `/help — ഈ ഗൈഡ് കാണാൻ`;
           `• Skip skips next player\n` +
           `• Reverse reverses direction (skips in 2-player)\n` +
           `• Draw Two adds 2 cards and skips\n` +
@@ -210,7 +225,7 @@ serve(async (req) => {
           .order("wins", { ascending: false })
           .limit(10);
 
-        let leaderboardText = `🏆 *GAMEVERSE Top Players*\n\n`;
+        let leaderboardText = `🏆 *നേരംപോക്ക് — Top Players*\n\n`;
         if (topPlayers && topPlayers.length > 0) {
           topPlayers.forEach((p: any, idx: number) => {
             const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "🎖️";

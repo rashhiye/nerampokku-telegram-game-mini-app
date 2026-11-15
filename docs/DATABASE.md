@@ -1,8 +1,12 @@
-# GAMEVERSE — DATABASE SCHEMA & STORED PROCEDURES
+# നേരംപോക്ക് (NERAMPOKKU) — DATABASE SCHEMA & STORED PROCEDURES
+
+> **Official Name:** നേരംപോക്ക്  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **Descriptor:** GAME BOT  
 
 ## 1. Schema Overview
 
-GAMEVERSE utilizes normalized PostgreSQL tables with strict foreign key constraints, indexes, and Row Level Security (RLS) policies.
+**നേരംപോക്ക്** utilizes normalized PostgreSQL tables with strict foreign key constraints, indexes, and Row Level Security (RLS) policies.
 
 ```mermaid
 erDiagram

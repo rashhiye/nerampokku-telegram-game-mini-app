@@ -46,7 +46,7 @@ export const App: React.FC = () => {
     {
       id: "demo-uno-1",
       groupId: "-1001234567890",
-      groupTitle: "GameVerse Community",
+      groupTitle: "നേരംപോക്ക് Official Club",
       gameType: "uno",
       status: "waiting",
       hostId: "user-1",
@@ -59,7 +59,7 @@ export const App: React.FC = () => {
     {
       id: "demo-ludo-1",
       groupId: "-1001234567890",
-      groupTitle: "GameVerse Community",
+      groupTitle: "നേരംപോക്ക് Official Club",
       gameType: "ludo",
       status: "waiting",
       hostId: "user-2",
@@ -72,7 +72,7 @@ export const App: React.FC = () => {
     {
       id: "demo-ludo-6p",
       groupId: "-1001234567890",
-      groupTitle: "GameVerse Community",
+      groupTitle: "നേരംപോക്ക് Official Club",
       gameType: "ludo",
       status: "waiting",
       hostId: "user-3",
@@ -376,7 +376,7 @@ export const App: React.FC = () => {
       <main className="flex-1 flex flex-col overflow-hidden">
         {screen === "lobby" && (
           <LobbyBrowser
-            currentGroupTitle="GAMEVERSE Group Community"
+            currentGroupTitle="നേരംപോക്ക് Official Club"
             sessions={sessions}
             onJoinSession={handleJoinSession}
             onCreateSession={handleCreateSession}
@@ -452,22 +452,26 @@ export const App: React.FC = () => {
 
         {screen === "help" && (
           <div className="w-full max-w-md mx-auto p-4 space-y-4 pb-20">
-            <h2 className="text-xl font-black text-white">How to Play GAMEVERSE</h2>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-black text-white font-malayalam">നേരംപോക്ക് — നിയമങ്ങൾ</h2>
+              <span className="text-[10px] font-bold text-indigo-400 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-800">GAME RULES</span>
+            </div>
+            
             <div className="p-4 rounded-3xl bg-[#161B26] border border-slate-800 space-y-2 text-xs text-slate-300">
-              <h3 className="font-bold text-amber-400">🃏 UNO (3-6 Players)</h3>
-              <p>• Match discard card by color, number, or symbol.</p>
-              <p>• Action cards: Skip, Reverse, and Draw Two (+2).</p>
-              <p>• Wild cards allow picking any color. Wild +4 can be challenged!</p>
-              <p>• When playing your second-to-last card, tap <strong>"Call UNO!"</strong> or opponents can catch you!</p>
+              <h3 className="font-bold text-amber-400 text-sm">🃏 UNO (3-6 Players)</h3>
+              <p>• കളറിലോ നമ്പറിലോ ചിഹ്നത്തിലോ മാച്ച് ചെയ്യുക.</p>
+              <p>• ആക്ഷൻ കാർഡുകൾ: Skip, Reverse, Draw Two (+2).</p>
+              <p>• Wild കാർഡുകൾ ഏത് കളറിലേക്കും മാറ്റാം. Wild +4 ചലഞ്ച് ചെയ്യാം!</p>
+              <p>• കയ്യിൽ 1 കാർഡ് ബാക്കിയാകുമ്പോൾ <strong>"Call UNO!"</strong> അടിക്കുക, അല്ലെങ്കിൽ എതിരാളികൾക്ക് ക്യാച്ച് ചെയ്യാം!</p>
             </div>
 
             <div className="p-4 rounded-3xl bg-[#161B26] border border-slate-800 space-y-2 text-xs text-slate-300">
-              <h3 className="font-bold text-blue-400">🎲 LUDO (4 & 6 Players)</h3>
-              <p>• Roll a <strong>6</strong> to exit base to start square.</p>
-              <p>• Rolling a 6 gives an extra roll (max 3 consecutive 6s).</p>
-              <p>• Land on opponent tokens on non-safe squares to capture them back to base!</p>
-              <p>• Star squares and starting positions are 100% safe.</p>
-              <p>• Exact roll required to reach Home center!</p>
+              <h3 className="font-bold text-blue-400 text-sm">🎲 LUDO (4 & 6 Players)</h3>
+              <p>• തട്ടിൽ നിന്ന് ഇറങ്ങാൻ നിർബന്ധമായും <strong>6</strong> വീഴണം.</p>
+              <p>• 6 വീണാൽ വീണ്ടും റോൾ ചെയ്യാം (തുടർച്ചയായി 3 പ്രാവശ്യം 6 വീണാൽ ചാൻസ് പോകും).</p>
+              <p>• സേഫ് അല്ലാത്ത കട്ടകളിൽ ഉള്ള എതിരാളിയുടെ കോയിൻ വെട്ടി ബേസിലേക്ക് അയക്കാം!</p>
+              <p>• സ്റ്റാർ (Star) ഉള്ള കട്ടകൾ 100% സേഫ് ആണ്.</p>
+              <p>• ഹോം സെന്ററിലേക്ക് കൃത്യമായ നമ്പർ വീഴണം!</p>
             </div>
           </div>
         )}
@@ -500,7 +504,7 @@ export const App: React.FC = () => {
             }`}
           >
             <Home className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold">Lobby</span>
+            <span className="text-[10px] font-bold font-malayalam">ലോബി</span>
           </button>
 
           <button
@@ -513,7 +517,7 @@ export const App: React.FC = () => {
             }`}
           >
             <Trophy className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold">Ranks</span>
+            <span className="text-[10px] font-bold font-malayalam">റാങ്ക്</span>
           </button>
 
           <button
@@ -526,7 +530,7 @@ export const App: React.FC = () => {
             }`}
           >
             <User className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold">Profile</span>
+            <span className="text-[10px] font-bold font-malayalam">പ്രൊഫൈൽ</span>
           </button>
 
           <button
@@ -539,7 +543,7 @@ export const App: React.FC = () => {
             }`}
           >
             <HelpCircle className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold">Rules</span>
+            <span className="text-[10px] font-bold font-malayalam">നിയമങ്ങൾ</span>
           </button>
         </nav>
       )}

@@ -1,8 +1,12 @@
-# GAMEVERSE — SYSTEM ARCHITECTURE & DATA FLOWS
+# നേരംപോക്ക് (NERAMPOKKU) — SYSTEM ARCHITECTURE & DATA FLOWS
+
+> **Official Name:** നേരംപോക്ക്  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **Descriptor:** GAME BOT  
 
 ## 1. High-Level Overview
 
-GAMEVERSE is an authoritative multiplayer gaming platform built inside the Telegram Mini Apps ecosystem. The architecture is engineered around three primary tenets:
+**നേരംപോക്ക്** is an authoritative multiplayer gaming platform built inside the Telegram Mini Apps ecosystem. The architecture is engineered around three primary tenets:
 1. **Server-Authoritative Gameplay**: All moves, card draws, shuffles, dice rolls, and turn advancements occur on the backend to prevent cheating.
 2. **Deterministic State Synchronization**: Updates are sequenced with monotonic version numbers.
 3. **Zero-Friction Group Matchmaking**: Group members join active matches directly through Telegram deep links without typing room codes.
@@ -61,7 +65,7 @@ graph TB
 - **Supabase Realtime:** Multiplexed WebSockets for room broadcasts, presence, and chat messages.
 
 ### Telegram Integration
-- **Direct Links:** `https://t.me/<bot>/gameverse?startapp=g_<chat_id>` deep-links directly into the group's match room.
+- **Direct Links:** `https://t.me/<bot>/nerampokku?startapp=g_<chat_id>` deep-links directly into the group's match room.
 - **Cryptographic Validation:** Validates `auth_date`, sorts parameter keys, calculates HMAC with `WebAppData` secret key.
 
 ---

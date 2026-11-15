@@ -31,8 +31,8 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
   const isUno = session.gameType === "uno";
 
   const handleCopyLink = () => {
-    const botUser = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "GameVerseBot";
-    const shareUrl = `https://t.me/${botUser}/gameverse?startapp=g_${session.groupId}_s_${session.id}`;
+    const botUser = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "NeramPokkuBot";
+    const shareUrl = `https://t.me/${botUser}/nerampokku?startapp=g_${session.groupId}_s_${session.id}`;
     navigator.clipboard?.writeText(shareUrl);
     setCopied(true);
     haptics.notification("success");
@@ -40,9 +40,9 @@ export const WaitingRoom: React.FC<WaitingRoomProps> = ({
   };
 
   const handleTelegramShare = () => {
-    const botUser = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "GameVerseBot";
-    const shareUrl = `https://t.me/${botUser}/gameverse?startapp=g_${session.groupId}_s_${session.id}`;
-    const text = `🎮 Join my ${isUno ? "UNO" : "LUDO"} match in GAMEVERSE! Seats open: ${players.length}/${session.maxPlayers}`;
+    const botUser = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "NeramPokkuBot";
+    const shareUrl = `https://t.me/${botUser}/nerampokku?startapp=g_${session.groupId}_s_${session.id}`;
+    const text = `🎮 നേരംപോക്കിൽ ${isUno ? "UNO" : "LUDO"} കളിക്കാൻ വരൂ! സീറ്റുകൾ: ${players.length}/${session.maxPlayers} — കളിക്കാം... സമയം പോക്കാം!`;
     const tgShareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;
     window.open(tgShareLink, "_blank");
   };

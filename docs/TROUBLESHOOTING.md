@@ -1,4 +1,8 @@
-# GAMEVERSE — TROUBLESHOOTING & FAQ
+# നേരംപോക്ക് (NERAMPOKKU) — TROUBLESHOOTING & FAQ
+
+> **Official Name:** നേരംപോക്ക്  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **Descriptor:** GAME BOT  
 
 ### 1. Bot doesn't respond to `/games` in groups
 - **Solution:** Group privacy mode is on by default in Telegram. In [@BotFather](https://t.me/BotFather), go to `/mybots` → Select your bot → **Bot Settings** → **Group Privacy** → **Turn off**. Then remove the bot from the group and re-add it.

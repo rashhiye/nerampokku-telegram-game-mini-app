@@ -6,6 +6,11 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Noto Sans Malayalam"', 'Outfit', 'sans-serif'],
+        malayalam: ['"Noto Sans Malayalam"', 'sans-serif'],
+        display: ['Outfit', '"Noto Sans Malayalam"', 'sans-serif'],
+      },
       colors: {
         gameverse: {
           bg: "#0B0E14",

@@ -1,12 +1,12 @@
 -- ==============================================================================
--- GAMEVERSE: SEED DATA FOR LOCAL DEVELOPMENT & TESTING
+-- നേരംപോക്ക് (NERAMPOKKU): SEED DATA FOR LOCAL DEVELOPMENT & TESTING
 -- File: supabase/seed.sql
 -- ==============================================================================
 
 -- 1. Insert Demo Telegram Group
 INSERT INTO telegram_groups (id, telegram_chat_id, title, chat_type)
 VALUES 
-    ('11111111-1111-1111-1111-111111111111', -1001234567890, 'GameVerse Official Community', 'supergroup'),
+    ('11111111-1111-1111-1111-111111111111', -1001234567890, 'നേരംപോക്ക് Official Club', 'supergroup'),
     ('22222222-2222-2222-2222-222222222222', -1009876543210, 'Ludo & Uno Champs', 'group')
 ON CONFLICT (telegram_chat_id) DO NOTHING;
 

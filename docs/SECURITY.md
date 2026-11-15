@@ -1,4 +1,8 @@
-# GAMEVERSE — SECURITY ARCHITECTURE & FRAUD PREVENTION
+# നേരംപോക്ക് (NERAMPOKKU) — SECURITY ARCHITECTURE & FRAUD PREVENTION
+
+> **Official Name:** നേരംപോക്ക്  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **Descriptor:** GAME BOT  
 
 ## 1. Threat Model & Safeguards
 

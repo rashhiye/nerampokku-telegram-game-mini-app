@@ -1,4 +1,8 @@
-# GAMEVERSE — API & EDGE FUNCTION REFERENCE
+# നേരംപോക്ക് (NERAMPOKKU) — API & EDGE FUNCTION REFERENCE
+
+> **Official Name:** നേരംപോക്ക്  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **Descriptor:** GAME BOT  
 
 All API endpoints are implemented as serverless **Supabase Edge Functions** (Deno) with CORS headers enabled.
 

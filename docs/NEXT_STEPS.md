@@ -1,6 +1,11 @@
-# GAMEVERSE — COMPLETE OWNER ONBOARDING & LAUNCH GUIDE (NEXT_STEPS.md)
+# നേരംപോക്ക് (NERAMPOKKU) — COMPLETE OWNER ONBOARDING & LAUNCH GUIDE (NEXT_STEPS.md)
 
-Welcome to **GAMEVERSE**! This document was written specifically for you, the project owner. Even if you have never deployed a backend server, database, or Telegram bot before, following this step-by-step guide will take you from local source code to a live, production-ready Telegram gaming platform.
+> **Official Name:** നേരംപോക്ക്  
+> **English Descriptor:** GAME BOT  
+> **Tagline:** കളിക്കാം... സമയം പോക്കാം!  
+> **English Description:** Multiplayer Gaming & Entertainment  
+
+Welcome to **നേരംപോക്ക്**! This document was written specifically for you, the project owner. Even if you have never deployed a backend server, database, or Telegram bot before, following this step-by-step guide will take you from local source code to a live, production-ready Telegram gaming platform.
 
 ---
 
@@ -41,8 +46,8 @@ You need to register your bot with Telegram's official bot creator, [@BotFather]
 2. In the search bar, search for `@BotFather` (verify the blue checkmark) or open [https://t.me/BotFather](https://t.me/BotFather).
 3. Send `/start` to start a conversation.
 4. Send the command: `/newbot`.
-5. Enter a **Name** for your bot (e.g., `GAMEVERSE — Play Together`).
-6. Enter a **Username** ending in `bot` (e.g., `GameVerseOfficialBot` or `MyGameVerseBot`).
+5. Enter a **Name** for your bot: `നേരംപോക്ക് — GAME BOT`.
+6. Enter a **Username** ending in `bot` (e.g., `NeramPokkuBot` or `NeramPokkuGameBot`).
 7. BotFather will reply with your **HTTP API Token** formatted like:
    `7123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ_123456`
    > ⚠️ **CRITICAL:** Copy this token immediately! Keep it secret. Anyone with this token can control your bot.
@@ -61,25 +66,25 @@ To show the command autocomplete menu in Telegram:
 2. Select your bot.
 3. Paste the following block of text and send:
    ```text
-   games - Open group game lobby (UNO & LUDO)
-   start - Welcome screen and info
-   help - How to play UNO and LUDO
-   profile - View your win/loss stats
-   stats - View community leaderboard
+   games - നേരംപോക്ക് ഗ്രൂപ്പ് മാച്ച് ഹബ് (UNO & LUDO)
+   start - സ്വാഗതം & വിവരങ്ങൾ (Welcome)
+   help - കളി നിയമങ്ങൾ (How to Play)
+   profile - നിങ്ങളുടെ പ്രൊഫൈലും സ്റ്റാറ്റ്സും
+   stats - ലീഡർബോർഡ് (Leaderboard)
    ```
 
 ### Step 2.4: Configure the Telegram Mini App (Web App)
 1. In `@BotFather`, send `/newapp`.
 2. Select your bot.
-3. Enter a Title: `GAMEVERSE`.
-4. Enter a Short Description: `Play multiplayer UNO and LUDO in groups!`.
+3. Enter a Title: `നേരംപോക്ക്`.
+4. Enter a Short Description: `കളിക്കാം... സമയം പോക്കാം! Multiplayer UNO & LUDO in Telegram groups.`.
 5. Upload a photo/icon (640x360 px suggested) or send `/empty` to skip for now.
 6. When prompted for the **Web App URL**, provide:
-   - For local development: `https://your-ngrok-or-tunnel-url.com` or placeholder `https://gameverse.pages.dev`
-   - For production: Your Cloudflare Pages URL (e.g., `https://gameverse.pages.dev`).
-7. Enter a short name for the app: `gameverse`.
+   - For local development: `https://your-ngrok-or-tunnel-url.com` or placeholder `https://nerampokku.pages.dev`
+   - For production: Your Cloudflare Pages URL (e.g., `https://nerampokku.pages.dev`).
+7. Enter a short name for the app: `nerampokku`.
 8. BotFather will provide your direct Mini App link:
-   `https://t.me/<YourBotUsername>/gameverse`
+   `https://t.me/<YourBotUsername>/nerampokku`
 
 ---
 
@@ -138,8 +143,8 @@ Create a file named `.env` in the root folder of your project (copy from `.env.e
 # ==============================================================================
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-VITE_TELEGRAM_BOT_USERNAME=YourBotUsernameWithoutAt
-VITE_APP_URL=https://gameverse.pages.dev
+VITE_TELEGRAM_BOT_USERNAME=NeramPokkuBot
+VITE_APP_URL=https://nerampokku.pages.dev
 
 # ==============================================================================
 # BACKEND SERVER SECRETS (Used by Edge Functions and Telegram Bot)
@@ -159,17 +164,17 @@ BOT_PORT=3000
 Cloudflare Pages provides free, high-speed hosting with worldwide CDN distribution.
 
 ### Step 5.1: Push Code to GitHub
-1. Create a new repository on [GitHub](https://github.com/new) named `gameverse`.
+1. Create a new repository on [GitHub](https://github.com/new) named `nerampokku`.
 2. In Windows PowerShell inside your project folder:
    ```powershell
-   git remote add origin https://github.com/<your-username>/gameverse.git
+   git remote add origin https://github.com/<your-username>/nerampokku.git
    git branch -M main
    git push -u origin main
    ```
 
 ### Step 5.2: Create Cloudflare Pages Project
 1. Log in to your [Cloudflare Dashboard](https://dash.cloudflare.com) and click **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**.
-2. Select your `gameverse` repository.
+2. Select your `nerampokku` repository.
 3. Set the build configuration:
    - **Framework preset**: `Vite`
    - **Root directory**: `frontend`
@@ -178,10 +183,10 @@ Cloudflare Pages provides free, high-speed hosting with worldwide CDN distributi
 4. Expand **Environment variables** and add:
    - `VITE_SUPABASE_URL`: `https://your-project-id.supabase.co`
    - `VITE_SUPABASE_ANON_KEY`: `eyJhbGciOiJI...`
-   - `VITE_TELEGRAM_BOT_USERNAME`: `YourBotUsername`
+   - `VITE_TELEGRAM_BOT_USERNAME`: `NeramPokkuBot`
 5. Click **"Save and Deploy"**.
 6. In ~1 minute, Cloudflare will provide your production URL:
-   `https://gameverse.pages.dev` (or `<your-subdomain>.pages.dev`).
+   `https://nerampokku.pages.dev` (or `<your-subdomain>.pages.dev`).
 
 ---
 
@@ -192,9 +197,9 @@ Now, connect your live Cloudflare Pages URL with Telegram and Supabase.
 ### Step 6.1: Update Mini App URL in BotFather
 1. Open [@BotFather](https://t.me/BotFather) in Telegram.
 2. Send `/myapps`.
-3. Select `gameverse`.
+3. Select `nerampokku`.
 4. Click **Edit URL** and enter your production Cloudflare URL:
-   `https://gameverse.pages.dev`
+   `https://nerampokku.pages.dev`
 
 ### Step 6.2: Deploy Supabase Edge Functions & Set Webhook
 If deploying serverless backend on Supabase:
@@ -278,7 +283,7 @@ Follow this checklist once deployed to verify full platform operation:
 - [ ] **Group Integration:**
   - [ ] Add bot to a Telegram test group.
   - [ ] Type `/games` in the group chat.
-  - [ ] Verify bot sends the interactive GAMEVERSE match card.
+  - [ ] Verify bot sends the interactive നേരംപോക്ക് match card.
   - [ ] Tap **"Play in this Group"**. Verify Mini App opens directly to that group's lobby without asking for room codes.
 - [ ] **Multiplayer UNO:**
   - [ ] Create a 4-player UNO room.
@@ -342,10 +347,10 @@ Follow this checklist once deployed to verify full platform operation:
 
 ## 11. FINAL LAUNCH CHECKLIST
 
-Follow these 12 final steps to launch GAMEVERSE to your community:
+Follow these 12 final steps to launch നേരംപോക്ക് to your community:
 1. [ ] Create accounts on GitHub, Cloudflare, and Supabase.
 2. [ ] Create bot via [@BotFather](https://t.me/BotFather) and disable Group Privacy.
-3. [ ] Create Mini App in BotFather via `/newapp` and note short name `gameverse`.
+3. [ ] Create Mini App in BotFather via `/newapp` and note short name `nerampokku`.
 4. [ ] Create Supabase project and save API keys.
 5. [ ] Execute the 3 SQL migration scripts in Supabase SQL Editor.
 6. [ ] Enable Realtime replication for game and chat tables.
@@ -354,4 +359,4 @@ Follow these 12 final steps to launch GAMEVERSE to your community:
 9. [ ] Update Mini App URL in BotFather to your production Cloudflare HTTPS link.
 10. [ ] Set Telegram webhook or run the bot server.
 11. [ ] Add your bot to your community group.
-12. [ ] Send `/games`, invite your group members, and PLAY TOGETHER! 🎮
+12. [ ] Send `/games`, invite your group members, and **കളിക്കാം... സമയം പോക്കാം!** 🎮
